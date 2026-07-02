@@ -1,9 +1,9 @@
 ---
-name: manhua-animator
+name: manju-animator
 version: 1.0.0
 description: >
   漫剧动态动画Agent。独立使用场景：将静态分镜转为动态视频Prompt、控制运镜和动态细节。
-  全流程场景：由 manhua-workflow 自动调用，无需手动激活。
+  全流程场景：由 manju-workflow 自动调用，无需手动激活。
   触发词包括：动态、动画、图生视频、可灵Kling、Pika、Runway、让画面动起来。
 ---
 
@@ -69,5 +69,5 @@ description: >
 4. 特效类动态统一风格，不混搭不同特效体系。
 
 ## 维护说明
-本文件是动态动画能力的**唯一权威来源**。`manhua-workflow` Skill 执行阶段五时会加载本文件的全部规则（动态元素分级表、工具参数、Prompt结构等）。
+本文件是动态动画能力的**唯一权威来源**。`manju-workflow` Skill 执行阶段五时会加载本文件的全部规则（动态元素分级表、工具参数、Prompt结构等）。
 修改动态动画的能力规则时，只需修改本文件，workflow 会自动应用最新规则。

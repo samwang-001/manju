@@ -1,9 +1,9 @@
 ---
-name: manhua-director
+name: manju-director
 version: 1.0.0
 description: >
   漫剧总控导演Agent。独立使用场景：校验分镜表质量、审核各环节输出、下发创作任务。
-  全流程场景：由 manhua-workflow 自动调用，无需手动激活。
+  全流程场景：由 manju-workflow 自动调用，无需手动激活。
   触发词包括：校验分镜、审核质量、导演Agent、总控调度、漫剧质量把控。
 ---
 
@@ -100,5 +100,5 @@ description: >
 - 导出参数：1080P，9:16竖屏，30fps，8-12Mbps
 
 ## 维护说明
-本文件是总控导演能力的**唯一权威来源**。`manhua-workflow` Skill 执行阶段一和阶段三时会加载本文件的规则。
+本文件是总控导演能力的**唯一权威来源**。`manju-workflow` Skill 执行阶段一和阶段三时会加载本文件的规则。
 修改总控导演的能力规则时，只需修改本文件，workflow 会自动应用最新规则。

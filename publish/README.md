@@ -6,19 +6,19 @@
 
 | Skill | 角色 | 说明 |
 |-------|------|------|
-| `manhua-workflow` | 全流程串联引擎 | 输入需求 → 自动依次调用各 Agent → 输出完整制作包 |
-| `manhua-director` | 总控导演 | 需求定调 + 分镜质量校验 |
-| `manhua-writer` | 编剧分镜 | 标准化分镜表编写 |
-| `manhua-artist` | 美术总监 | AI 绘图 Prompt 生成 + 角色场景资产固化 |
-| `manhua-animator` | 动态制作 | 图生视频 Prompt + 运镜方案 + 风险评估 |
-| `manhua-editor` | 剪辑合成 | 配音方案 + 剪辑清单 + BGM/字幕/导出参数 |
+| `manju-workflow` | 全流程串联引擎 | 输入需求 → 自动依次调用各 Agent → 输出完整制作包 |
+| `manju-director` | 总控导演 | 需求定调 + 分镜质量校验 |
+| `manju-writer` | 编剧分镜 | 标准化分镜表编写 |
+| `manju-artist` | 美术总监 | AI 绘图 Prompt 生成 + 角色场景资产固化 |
+| `manju-animator` | 动态制作 | 图生视频 Prompt + 运镜方案 + 风险评估 |
+| `manju-editor` | 剪辑合成 | 配音方案 + 剪辑清单 + BGM/字幕/导出参数 |
 
 ## 安装方式
 
 ### 方式一：从技能市场安装（推荐）
 
 1. 打开 CodeBuddy → 左侧「技能市场」
-2. 分别搜索 `manhua-workflow`、`manhua-director`、`manhua-writer`、`manhua-artist`、`manhua-animator`、`manhua-editor`
+2. 分别搜索 `manju-workflow`、`manju-director`、`manju-writer`、`manju-artist`、`manju-animator`、`manju-editor`
 3. 点击「添加」一键安装
 
 ### 方式二：本地导入
@@ -29,17 +29,17 @@
 your-project/
 └── .codebuddy/
     └── skills/
-        ├── manhua-workflow/
+        ├── manju-workflow/
         │   └── SKILL.md
-        ├── manhua-director/
+        ├── manju-director/
         │   └── SKILL.md
-        ├── manhua-writer/
+        ├── manju-writer/
         │   └── SKILL.md
-        ├── manhua-artist/
+        ├── manju-artist/
         │   └── SKILL.md
-        ├── manhua-animator/
+        ├── manju-animator/
         │   └── SKILL.md
-        └── manhua-editor/
+        └── manju-editor/
             └── SKILL.md
 ```
 
@@ -66,22 +66,22 @@ AI 会自动依次输出：
 也可以单独调用任何一个 Agent：
 
 ```
-@manhua-director 校验这份分镜表质量
-@manhua-writer 帮我写一个悬疑题材的分镜
-@manhua-artist 生成国风仙侠角色Prompt
-@manhua-animator 这个镜头怎么加动态效果
-@manhua-editor 帮我规划BGM和字幕
+@manju-director 校验这份分镜表质量
+@manju-writer 帮我写一个悬疑题材的分镜
+@manju-artist 生成国风仙侠角色Prompt
+@manju-animator 这个镜头怎么加动态效果
+@manju-editor 帮我规划BGM和字幕
 ```
 
 ## 优化 Agent 能力
 
 需要优化某个 Agent 的能力时，**只修改对应的 SKILL.md 文件**即可，workflow 会自动加载最新规则：
 
-- 增强编剧能力 → 修改 `manhua-writer/SKILL.md`
-- 增加 AI 绘图工具 → 修改 `manhua-artist/SKILL.md`
-- 调整动态元素分级 → 修改 `manhua-animator/SKILL.md`
-- 补充 BGM 风格 → 修改 `manhua-editor/SKILL.md`
-- 优化校验标准 → 修改 `manhua-director/SKILL.md`
+- 增强编剧能力 → 修改 `manju-writer/SKILL.md`
+- 增加 AI 绘图工具 → 修改 `manju-artist/SKILL.md`
+- 调整动态元素分级 → 修改 `manju-animator/SKILL.md`
+- 补充 BGM 风格 → 修改 `manju-editor/SKILL.md`
+- 优化校验标准 → 修改 `manju-director/SKILL.md`
 
 ## 版本
 

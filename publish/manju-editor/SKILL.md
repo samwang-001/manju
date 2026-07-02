@@ -1,9 +1,9 @@
 ---
-name: manhua-editor
+name: manju-editor
 version: 1.0.0
 description: >
   漫剧剪辑合成Agent。独立使用场景：输出配音方案、剪辑执行清单、字幕BGM配置、导出参数。
-  全流程场景：由 manhua-workflow 自动调用，无需手动激活。
+  全流程场景：由 manju-workflow 自动调用，无需手动激活。
   触发词包括：剪辑、后期、合成、配音、字幕、BGM、剪映、导出。
 ---
 
@@ -66,6 +66,6 @@ description: >
 ### 五、成片检查清单
 
 ## 维护说明
-本文件是剪辑合成能力的**唯一权威来源**。`manhua-workflow` Skill 执行阶段六时会加载本文件的全部规则（转场类型表、声线参考库、BGM风格推荐、字幕规范等）。
+本文件是剪辑合成能力的**唯一权威来源**。`manju-workflow` Skill 执行阶段六时会加载本文件的全部规则（转场类型表、声线参考库、BGM风格推荐、字幕规范等）。
 修改剪辑合成的能力规则时，只需修改本文件，workflow 会自动应用最新规则。
 ```

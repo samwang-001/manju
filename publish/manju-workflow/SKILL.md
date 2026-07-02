@@ -1,5 +1,5 @@
 ---
-name: manhua-workflow
+name: manju-workflow
 description: >
   漫剧制作全流程自动串联引擎。当用户提出漫剧创作需求时，自动按流程依次执行
   总控定调→编剧分镜→总控校验→美术绘图→动态动画→剪辑合成，全程自动流转，
@@ -29,11 +29,11 @@ version: 1.0.0
 
 | 阶段 | 角色 | 权威Skill文件 |
 |------|------|-------------|
-| 阶段一 + 阶段三 | 总控导演 | `.codebuddy/skills/manhua-director/SKILL.md` |
-| 阶段二 | 编剧分镜 | `.codebuddy/skills/manhua-writer/SKILL.md` |
-| 阶段四 | 美术总监 | `.codebuddy/skills/manhua-artist/SKILL.md` |
-| 阶段五 | 动态制作 | `.codebuddy/skills/manhua-animator/SKILL.md` |
-| 阶段六 | 剪辑合成 | `.codebuddy/skills/manhua-editor/SKILL.md` |
+| 阶段一 + 阶段三 | 总控导演 | `.codebuddy/skills/manju-director/SKILL.md` |
+| 阶段二 | 编剧分镜 | `.codebuddy/skills/manju-writer/SKILL.md` |
+| 阶段四 | 美术总监 | `.codebuddy/skills/manju-artist/SKILL.md` |
+| 阶段五 | 动态制作 | `.codebuddy/skills/manju-animator/SKILL.md` |
+| 阶段六 | 剪辑合成 | `.codebuddy/skills/manju-editor/SKILL.md` |
 
 **关键规则：**
 - 执行每个阶段前，你必须**先读取对应的独立Skill文件**，以获取该角色的完整能力定义
@@ -45,12 +45,12 @@ version: 1.0.0
 
 ## 全流程执行步骤（自动依次执行）
 
-### 阶段一：需求解读与定调 ← 🎬 调用 `manhua-director`（总控导演Agent）
+### 阶段一：需求解读与定调 ← 🎬 调用 `manju-director`（总控导演Agent）
 
 **执行角色：** 总控导演
-**权威来源：** `.codebuddy/skills/manhua-director/SKILL.md`
+**权威来源：** `.codebuddy/skills/manju-director/SKILL.md`
 
-**执行前必须加载：** `manhua-director` Skill 中的「核心工作流程」「风格默认规则」「下发任务标准格式」
+**执行前必须加载：** `manju-director` Skill 中的「核心工作流程」「风格默认规则」「下发任务标准格式」
 
 **必须输出的内容：**
 ```
@@ -72,19 +72,19 @@ version: 1.0.0
 【剧情梗概】
 {3-5句话概括本集剧情}
 
-【叙事节奏规划】（参考 manhua-writer Skill 中的叙事节奏模板）
+【叙事节奏规划】（参考 manju-writer Skill 中的叙事节奏模板）
 ```
 
 **完成后立即进入阶段二，不等待用户。**
 
 ---
 
-### 阶段二：编剧出分镜表 ← ✍️ 调用 `manhua-writer`（编剧分镜Agent）
+### 阶段二：编剧出分镜表 ← ✍️ 调用 `manju-writer`（编剧分镜Agent）
 
 **执行角色：** 编剧分镜师
-**权威来源：** `.codebuddy/skills/manhua-writer/SKILL.md`
+**权威来源：** `.codebuddy/skills/manju-writer/SKILL.md`
 
-**执行前必须加载：** `manhua-writer` Skill 中的全部规则，包括但不限于：
+**执行前必须加载：** `manju-writer` Skill 中的全部规则，包括但不限于：
 - 分镜制作规则（镜头时长、景别规范、运镜方式、画面描述、绘图关键词）
 - 景别使用指南（特写/近景/中景/全景/远景的适用场景和时长）
 - 运镜方式详解（各运镜的效果、AI适配度、使用建议）
@@ -111,12 +111,12 @@ version: 1.0.0
 
 ---
 
-### 阶段三：分镜表质量校验（内置自动循环） ← 🔍 调用 `manhua-director`（总控导演Agent）
+### 阶段三：分镜表质量校验（内置自动循环） ← 🔍 调用 `manju-director`（总控导演Agent）
 
 **执行角色：** 总控导演
-**权威来源：** `.codebuddy/skills/manhua-director/SKILL.md`
+**权威来源：** `.codebuddy/skills/manju-director/SKILL.md`
 
-**执行前必须加载：** `manhua-director` Skill 中的「质量校验标准」，特别是「编剧分镜校验要点」
+**执行前必须加载：** `manju-director` Skill 中的「质量校验标准」，特别是「编剧分镜校验要点」
 
 **校验标准（来自独立Skill）：**
 | 检查项 | 标准 |
@@ -140,12 +140,12 @@ version: 1.0.0
 
 ---
 
-### 阶段四：美术绘图方案 ← 🎨 调用 `manhua-artist`（美术总监Agent）
+### 阶段四：美术绘图方案 ← 🎨 调用 `manju-artist`（美术总监Agent）
 
 **执行角色：** 美术总监
-**权威来源：** `.codebuddy/skills/manhua-artist/SKILL.md`
+**权威来源：** `.codebuddy/skills/manju-artist/SKILL.md`
 
-**执行前必须加载：** `manhua-artist` Skill 中的全部规则，包括但不限于：
+**执行前必须加载：** `manju-artist` Skill 中的全部规则，包括但不限于：
 - Prompt生成规则（结构、画风统一词、画幅参数）
 - 角色统一资产模板（外貌/发型/服装/体型/气质）
 - 场景统一描述模板
@@ -169,12 +169,12 @@ version: 1.0.0
 
 ---
 
-### 阶段五：动态动画方案 ← 🎥 调用 `manhua-animator`（动态制作Agent）
+### 阶段五：动态动画方案 ← 🎥 调用 `manju-animator`（动态制作Agent）
 
 **执行角色：** 动态制作师
-**权威来源：** `.codebuddy/skills/manhua-animator/SKILL.md`
+**权威来源：** `.codebuddy/skills/manju-animator/SKILL.md`
 
-**执行前必须加载：** `manhua-animator` Skill 中的全部规则，包括但不限于：
+**执行前必须加载：** `manju-animator` Skill 中的全部规则，包括但不限于：
 - 动态制作规则（时长匹配、运镜匹配、动效选择、稳定性要求）
 - 动态元素分级表（安全级/谨慎级/禁止级）
 - Prompt生成结构
@@ -197,12 +197,12 @@ version: 1.0.0
 
 ---
 
-### 阶段六：剪辑合成方案 ← ✂️ 调用 `manhua-editor`（剪辑合成Agent）
+### 阶段六：剪辑合成方案 ← ✂️ 调用 `manju-editor`（剪辑合成Agent）
 
 **执行角色：** 后期剪辑师
-**权威来源：** `.codebuddy/skills/manhua-editor/SKILL.md`
+**权威来源：** `.codebuddy/skills/manju-editor/SKILL.md`
 
-**执行前必须加载：** `manhua-editor` Skill 中的全部规则，包括但不限于：
+**执行前必须加载：** `manju-editor` Skill 中的全部规则，包括但不限于：
 - 剪辑规则（拼接顺序、转场设置、配音要求、字幕规范、BGM搭配、调色要求、导出参数）
 - 转场类型表（淡入淡出/闪白/硬切/模糊转场/黑场过渡）
 - 声线参考库
@@ -254,15 +254,15 @@ version: 1.0.0
 ## 维护规则（重要！）
 
 ### 当你需要优化Agent能力时：
-1. **只修改对应的独立Skill文件**（如 `.codebuddy/skills/manhua-writer/SKILL.md`）
+1. **只修改对应的独立Skill文件**（如 `.codebuddy/skills/manju-writer/SKILL.md`）
 2. **不需要修改本workflow文件**——它会在执行时动态加载独立Skill
 3. 下次运行workflow时，会自动应用独立Skill中的最新规则
 
 ### 修改示例：
-- 想增强编剧的运镜指导 → 修改 `manhua-writer/SKILL.md` 中的「运镜方式详解」
-- 想增加新的AI绘图工具支持 → 修改 `manhua-artist/SKILL.md` 中的「不同AI绘图工具参数」
-- 想调整动态元素分级 → 修改 `manhua-animator/SKILL.md` 中的「动态元素分级」
-- 想补充新的BGM风格 → 修改 `manhua-editor/SKILL.md` 中的「BGM风格推荐」
+- 想增强编剧的运镜指导 → 修改 `manju-writer/SKILL.md` 中的「运镜方式详解」
+- 想增加新的AI绘图工具支持 → 修改 `manju-artist/SKILL.md` 中的「不同AI绘图工具参数」
+- 想调整动态元素分级 → 修改 `manju-animator/SKILL.md` 中的「动态元素分级」
+- 想补充新的BGM风格 → 修改 `manju-editor/SKILL.md` 中的「BGM风格推荐」
 
 **一句话总结：改独立Skill，workflow自动跟随。**
 
@@ -274,10 +274,10 @@ version: 1.0.0
 
 | 子 Skill | 名称 | 用途 |
 |----------|------|------|
-| manhua-director | 总控导演 | 需求定调 + 质量校验 |
-| manhua-writer | 编剧分镜 | 分镜表编写 |
-| manhua-artist | 美术总监 | AI绘图Prompt生成 |
-| manhua-animator | 动态制作 | 图生视频Prompt生成 |
-| manhua-editor | 剪辑合成 | 配音/字幕/BGM/导出方案 |
+| manju-director | 总控导演 | 需求定调 + 质量校验 |
+| manju-writer | 编剧分镜 | 分镜表编写 |
+| manju-artist | 美术总监 | AI绘图Prompt生成 |
+| manju-animator | 动态制作 | 图生视频Prompt生成 |
+| manju-editor | 剪辑合成 | 配音/字幕/BGM/导出方案 |
 
 **安装方式：** 将所有 6 个 Skill 文件夹放入 `.codebuddy/skills/` 目录下即可。

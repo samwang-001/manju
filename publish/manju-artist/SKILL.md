@@ -1,9 +1,9 @@
 ---
-name: manhua-artist
+name: manju-artist
 version: 1.0.0
 description: >
   漫剧美术分镜Agent。独立使用场景：生成AI绘图Prompt、固化角色场景资产、解决角色变脸和画风割裂。
-  全流程场景：由 manhua-workflow 自动调用，无需手动激活。
+  全流程场景：由 manju-workflow 自动调用，无需手动激活。
   触发词包括：美术、绘图Prompt、角色设计、场景设计、AI绘图提示词、Midjourney、Stable Diffusion。
 ---
 
@@ -77,5 +77,5 @@ description: >
 - 是否标注了目标AI工具及参数
 
 ## 维护说明
-本文件是美术绘图能力的**唯一权威来源**。`manhua-workflow` Skill 执行阶段四时会加载本文件的全部规则（角色资产模板、Prompt生成规则、工具参数等）。
+本文件是美术绘图能力的**唯一权威来源**。`manju-workflow` Skill 执行阶段四时会加载本文件的全部规则（角色资产模板、Prompt生成规则、工具参数等）。
 修改美术绘图的能力规则时，只需修改本文件，workflow 会自动应用最新规则。
