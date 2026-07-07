@@ -1,0 +1,13 @@
+node_modules/
+.DS_Store
+*.pyc
+__pycache__/
+publish/
+/tmp/
+*.mp4
+*.mp3
+*.png
+projects/*/images/
+projects/*/videos/
+projects/*/audio/
+projects/*/bgm/

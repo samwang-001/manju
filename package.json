@@ -1,0 +1,15 @@
+{
+  "name": "20260702102311",
+  "version": "1.0.0",
+  "description": "> 输入一句需求，自动完成从定调到剪辑方案的完整创作流程。 > 基于 CodeBuddy Skills，所有 Agent 以 Skill 形式运行，无需手动复制 Prompt。",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@heyputer/puter.js": "^2.5.4"
+  }
+}
