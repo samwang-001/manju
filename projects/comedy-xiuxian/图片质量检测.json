@@ -1,0 +1,237 @@
+{
+  "summary": {
+    "total_shots": 10,
+    "total_issues": 32,
+    "problems": {
+      "风格漂移": 9,
+      "亮度不均": 8,
+      "色调跳跃": 5,
+      "分辨率问题": 10
+    }
+  },
+  "color_consistency": [
+    {
+      "shot": "镜头01",
+      "distance": 0.0
+    },
+    {
+      "shot": "镜头02",
+      "distance": 41.4
+    },
+    {
+      "shot": "镜头03",
+      "distance": 41.6
+    },
+    {
+      "shot": "镜头04",
+      "distance": 270.9
+    },
+    {
+      "shot": "镜头05",
+      "distance": 249.6
+    },
+    {
+      "shot": "镜头06",
+      "distance": 36.3
+    },
+    {
+      "shot": "镜头07",
+      "distance": 205.6
+    },
+    {
+      "shot": "镜头08",
+      "distance": 204.1
+    },
+    {
+      "shot": "镜头09",
+      "distance": 286.7
+    },
+    {
+      "shot": "镜头10",
+      "distance": 48.7
+    }
+  ],
+  "brightness_consistency": {
+    "avg": 114.8,
+    "std": 43.2,
+    "shots": [
+      {
+        "shot": "镜头01",
+        "mean": 86.2,
+        "deviation": 28.6
+      },
+      {
+        "shot": "镜头02",
+        "mean": 40.7,
+        "deviation": 74.1
+      },
+      {
+        "shot": "镜头03",
+        "mean": 112.6,
+        "deviation": 2.2
+      },
+      {
+        "shot": "镜头04",
+        "mean": 151.6,
+        "deviation": 36.8
+      },
+      {
+        "shot": "镜头05",
+        "mean": 163.9,
+        "deviation": 49.1
+      },
+      {
+        "shot": "镜头06",
+        "mean": 90.5,
+        "deviation": 24.3
+      },
+      {
+        "shot": "镜头07",
+        "mean": 125.2,
+        "deviation": 10.4
+      },
+      {
+        "shot": "镜头08",
+        "mean": 142.6,
+        "deviation": 27.8
+      },
+      {
+        "shot": "镜头09",
+        "mean": 177.0,
+        "deviation": 62.2
+      },
+      {
+        "shot": "镜头10",
+        "mean": 57.8,
+        "deviation": 57.0
+      }
+    ]
+  },
+  "style_similarity": {
+    "baseline": "镜头01",
+    "shots": [
+      {
+        "shot": "镜头01",
+        "distance": 0,
+        "level": "高度相似"
+      },
+      {
+        "shot": "镜头02",
+        "distance": 86,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头03",
+        "distance": 81,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头04",
+        "distance": 98,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头05",
+        "distance": 80,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头06",
+        "distance": 97,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头07",
+        "distance": 76,
+        "level": "风格可能漂移"
+      },
+      {
+        "shot": "镜头08",
+        "distance": 96,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头09",
+        "distance": 98,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头10",
+        "distance": 95,
+        "level": "⚠️ 风格严重不一致"
+      }
+    ]
+  },
+  "composition": [
+    {
+      "shot": "镜头01",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头02",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头03",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头04",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头05",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头06",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头07",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头08",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头09",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    },
+    {
+      "shot": "镜头10",
+      "resolution": "576x1024",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": false
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "summary": {
+    "total_shots": 3,
+    "total_issues": 3,
+    "problems": {
+      "风格漂移": 2,
+      "亮度不均": 0,
+      "色调跳跃": 1,
+      "分辨率问题": 0
+    }
+  },
+  "color_consistency": [
+    {
+      "shot": "镜头A",
+      "distance": 0.0
+    },
+    {
+      "shot": "镜头B",
+      "distance": 201.5
+    },
+    {
+      "shot": "镜头C",
+      "distance": 36.7
+    }
+  ],
+  "brightness_consistency": {
+    "avg": 129.7,
+    "std": 11.2,
+    "shots": [
+      {
+        "shot": "镜头A",
+        "mean": 132.5,
+        "deviation": 2.8
+      },
+      {
+        "shot": "镜头B",
+        "mean": 114.8,
+        "deviation": 14.9
+      },
+      {
+        "shot": "镜头C",
+        "mean": 141.7,
+        "deviation": 12.0
+      }
+    ]
+  },
+  "style_similarity": {
+    "baseline": "镜头A",
+    "shots": [
+      {
+        "shot": "镜头A",
+        "distance": 0,
+        "level": "高度相似"
+      },
+      {
+        "shot": "镜头B",
+        "distance": 140,
+        "level": "⚠️ 风格严重不一致"
+      },
+      {
+        "shot": "镜头C",
+        "distance": 105,
+        "level": "⚠️ 风格严重不一致"
+      }
+    ]
+  },
+  "composition": [
+    {
+      "shot": "镜头A",
+      "resolution": "1088x1920",
+      "aspect": 0.567,
+      "aspect_match": true,
+      "resolution_ok": true
+    },
+    {
+      "shot": "镜头B",
+      "resolution": "1080x1920",
+      "aspect": 0.562,
+      "aspect_match": true,
+      "resolution_ok": true
+    },
+    {
+      "shot": "镜头C",
+      "resolution": "1088x1920",
+      "aspect": 0.567,
+      "aspect_match": true,
+      "resolution_ok": true
+    }
+  ]
+}

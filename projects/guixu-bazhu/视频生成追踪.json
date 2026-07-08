@@ -1,0 +1,74 @@
+{
+  "generations": [
+    {
+      "shot": "镜头01",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:07:57.077223",
+      "cost": 0
+    },
+    {
+      "shot": "镜头02",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:07:57.738377",
+      "cost": 0
+    },
+    {
+      "shot": "镜头03",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:07:58.736872",
+      "cost": 0
+    },
+    {
+      "shot": "镜头04",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:07:59.486329",
+      "cost": 0
+    },
+    {
+      "shot": "镜头05",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:08:00.379740",
+      "cost": 0
+    },
+    {
+      "shot": "镜头06",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:08:01.121242",
+      "cost": 0
+    },
+    {
+      "shot": "镜头07",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:08:02.227330",
+      "cost": 0
+    },
+    {
+      "shot": "镜头08",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:08:03.279932",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:08:04.133371",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "kenburns",
+      "status": "success",
+      "timestamp": "2026-07-07T16:08:05.205825",
+      "cost": 0
+    }
+  ]
+}

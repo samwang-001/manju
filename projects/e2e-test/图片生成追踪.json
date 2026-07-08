@@ -1,0 +1,42 @@
+{
+  "generations": [
+    {
+      "shot": "test_final",
+      "backend": "z-image-turbo(budget)",
+      "status": "success",
+      "timestamp": "2026-07-07T03:27:14.628Z",
+      "resolution": "512x896→放大"
+    },
+    {
+      "shot": "shot01",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T03:28:27.790Z",
+      "resolution": "1088x1920"
+    },
+    {
+      "shot": "shot_hq",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T03:35:07.504Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "shot_hq",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T03:35:08.261Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "shot_hq",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T03:35:16.091Z",
+      "cost": 0
+    }
+  ],
+  "summary": "共5张 | 成功3 | 后端:{\"z-image-turbo(budget)\":1,\"z-image-turbo\":2,\"seedream(skipped)\":1,\"grok-imagine(skipped)\":1} | 💰$0.000"
+}

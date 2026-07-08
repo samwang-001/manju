@@ -1,0 +1,21 @@
+{
+  "shots": [
+    {"id":"01","duration":6,"voice":"这里……是哪？","voice_id":"yunyang","sfx":"ambient_drone","bgm_segment":"mysterious"},
+    {"id":"02","duration":3,"sfx":"energy_hum","bgm_segment":"mysterious"},
+    {"id":"03","duration":5,"voice":"糟糕！","voice_id":"yunyang","sfx":"none","bgm_segment":"tense"},
+    {"id":"04","duration":3,"sfx":"heavy_impact","bgm_segment":"tense"},
+    {"id":"05","duration":4,"voice":"吓死我了！","voice_id":"yunxi","sfx":"none","bgm_segment":"comedy"},
+    {"id":"06","duration":3,"sfx":"slide_trigger","bgm_segment":"comedy"},
+    {"id":"07","duration":5,"voice":"预言……成真了。","voice_id":"yunyang","sfx":"shimmer","bgm_segment":"epic"},
+    {"id":"08","duration":5,"sfx":"deep_rumble","bgm_segment":"epic"},
+    {"id":"09","duration":4,"voice":"我连灵力都没有啊？！","voice_id":"yunxi","sfx":"none","bgm_segment":"outro"},
+    {"id":"10","duration":5,"sfx":"wind_fade","bgm_segment":"outro"}
+  ],
+  "bgm_segments": {
+    "mysterious": {"style":"low_drone","duration":9},
+    "tense": {"style":"heartbeat","duration":8},
+    "comedy": {"style":"quirky","duration":7},
+    "epic": {"style":"orchestral","duration":10},
+    "outro": {"style":"fade","duration":9}
+  }
+}

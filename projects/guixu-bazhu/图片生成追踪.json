@@ -1,0 +1,189 @@
+{
+  "generations": [
+    {
+      "shot": "镜头06",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T07:55:42.322Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头06",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T07:55:43.039Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头06",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T07:55:50.137Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头07",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T07:57:52.006Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头07",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T07:57:52.787Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头07",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T07:57:57.891Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头08",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T07:59:53.664Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头08",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T07:59:54.788Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头08",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T08:00:01.738Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:02:03.788Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:02:04.643Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T08:02:10.935Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:02:12.623Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:02:13.442Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头09",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T08:02:20.155Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:04:05.878Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:04:06.563Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T08:04:11.419Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:04:20.937Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:04:21.675Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T08:04:27.730Z",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "seedream(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:05:38.551Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "grok-imagine(skipped)",
+      "status": "skip",
+      "timestamp": "2026-07-07T08:05:39.319Z",
+      "reason": "余额不足",
+      "cost": 0
+    },
+    {
+      "shot": "镜头10",
+      "backend": "z-image-turbo",
+      "status": "success",
+      "timestamp": "2026-07-07T08:05:46.227Z",
+      "cost": 0
+    }
+  ],
+  "summary": "共24张 | 成功8 | 后端:{\"seedream(skipped)\":8,\"grok-imagine(skipped)\":8,\"z-image-turbo\":8} | 💰$0.000"
+}
