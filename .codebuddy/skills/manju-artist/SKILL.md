@@ -25,22 +25,25 @@ description: >
 4. **禁止出现抽象诗意描写**，所有内容具象化到可直接拍摄
 5. 负面提示词统一：模糊，低画质，变形，五官崩坏，多余肢体，水印，文字
 
-## SOP视听规格（必须注入Prompt）
+## SOP视听参考（注入Prompt时的风格选项，按题材选用）
 
-### 色彩与灯光
-- **高饱和、高明度** — 确保室外/地铁强光环境下可看清屏幕
-- **人物面部高亮** — 拒绝胶片暗调、大光比
-- **关键词**：`high saturation, high brightness, key light on face, bright exposure, vivid colors`
+> 📌 以下是不同风格的Prompt关键词工具箱，不是每张图都要全用。
+> 爽剧用高饱和，悬疑用暗调，治愈用柔光——根据分镜表情绪选择。
 
-### 景别铁律
-- 70%以上特写+近景 — 紧抓面部情绪细节
-- 关键词（特写）：`extreme close-up, face detail, eyes emotion, tears, clenched jaw`
-- 关键词（近景）：`close-up portrait, upper body, expression focus`
-- 禁用大远景"交代环境"
+### 色彩与灯光（按题材选）
+- **爽剧/甜宠**：`high saturation, high brightness, vivid colors, key light on face`
+- **悬疑/暗黑**：`low-key lighting, deep shadows, cool blue tones, dramatic contrast`
+- **治愈/文艺**：`soft warm light, pastel colors, gentle diffusion, afternoon glow`
+- **通用**：人物面部高亮，确保小屏可看清表情
+
+### 景别关键词（按分镜需要选用）
+- 特写：`extreme close-up, face detail, eyes emotion, tears, clenched jaw`
+- 近景：`close-up portrait, upper body, expression focus`
+- 中景：`medium shot, full body, action pose`
+- 全景：`wide shot, environment context, establishing`
 
 ### 构图
 - 竖屏9:16，主体人物居中放大
-- L-Cut风格配合：面部占画面50%以上
 
 ## 角色统一资产模板（每个角色必须包含）
 - 角色名称、性别、年龄
