@@ -25,14 +25,13 @@ const PYTHON3 = '/usr/bin/python3';
 
 // ==================== 配置 ====================
 const CONFIG = {
-  // 火山引擎 图片模型列表（按优先级排列，自动尝试）
-  VOLCENGINE_MODELS: [
-    'doubao-seedance-4.5-250115',    // 200张免费
-    'doubao-seedance-4.0-250115',    // 173/200张
-    'doubao-seedance-3.0-0i-250115', // 199/200张
-    'doubao-seedance-3.0-pro-250115',// 200/200张
-    'doubao-seedance-5.0-lite-250115',// 50/50张
-    'doubao-seedance-1.0-pro-250115',// tokens
+  // 火山引擎 接入点列表（按优先级自动尝试）
+  VOLCENGINE_KEY: process.env.VOLCENGINE_API_KEY || '',
+  VOLCENGINE_ARK_URL: 'https://ark.cn-beijing.volces.com/api/v3/images/generations',
+  VOLCENGINE_ENDPOINTS: [
+    'ep-20260708143306-qzgm6',  // Seedance 4.5 (200张免费)
+    'ep-20260708142843-bhdft',  // 备用图片模型1
+    'ep-20260708143029-wq5nf',  // 备用图片模型2
   ],
 
   // Pollinations 代理（🥈🥉🏅备用）
@@ -227,18 +226,16 @@ async function generateSeedreamDirect(prompt, outputPath, width, height) {
   if (totalPixels > 4000000) size = '4K';
   if (totalPixels < 1500000) size = '1K';
 
-  for (const model of CONFIG.VOLCENGINE_MODELS) {
+  for (const ep of CONFIG.VOLCENGINE_ENDPOINTS) {
     const body = {
-      model: model,
+      model: ep,
       prompt: prompt,
       size: size,
-      output_format: 'png',
-      watermark: false,
       response_format: 'url',
       force_single: true,
     };
 
-    console.log(`  🥇 火山引擎 ${model} | ${size}`);
+    console.log(`  🥇 火山引擎 ${ep} | ${size}`);
     try {
       const resp = await jsonPost(CONFIG.VOLCENGINE_ARK_URL, body, apiKey);
 
@@ -246,26 +243,41 @@ async function generateSeedreamDirect(prompt, outputPath, width, height) {
         throw new Error('AUTH_FAILED');
       }
       if (resp.status === 402) {
-        console.log(`    ⚠️ ${model} 余额不足，试下一模型`);
+        console.log(`    ⚠️ ${ep} 余额不足，试下一个`);
+        continue;
+      }
+      if (resp.status === 400 && resp.body?.error?.message?.includes('size')) {
+        // 此端点不支持 size 参数，重试不带 size
+        console.log(`    ⚠️ ${ep} 不支持size参数，省略重试...`);
+        delete body.size;
+        const retry = await jsonPost(CONFIG.VOLCENGINE_ARK_URL, body, apiKey);
+        if (retry.status === 200) {
+          const imageUrl = retry.body?.data?.[0]?.url;
+          if (imageUrl) {
+            await downloadFromUrl(imageUrl, outputPath);
+            console.log(`    ✅ ${ep} 成功`);
+            return outputPath;
+          }
+        }
         continue;
       }
       if (resp.status !== 200) {
         const msg = resp.body?.error?.message || resp.body?.message || `HTTP_${resp.status}`;
-        console.log(`    ⚠️ ${model} ${msg.substring(0, 60)}`);
+        console.log(`    ⚠️ ${ep} ${msg.substring(0, 60)}`);
         continue;
       }
 
       const imageUrl = resp.body?.data?.[0]?.url;
       if (!imageUrl) {
-        console.log(`    ⚠️ ${model} 无图片URL`);
+        console.log(`    ⚠️ ${ep} 无图片URL`);
         continue;
       }
       await downloadFromUrl(imageUrl, outputPath);
-      console.log(`    ✅ ${model} 成功`);
+      console.log(`    ✅ ${ep} 成功`);
       return outputPath;
     } catch (err) {
       const msg = err.message || String(err);
-      console.log(`    ⚠️ ${model} ${msg.substring(0, 60)}`);
+      console.log(`    ⚠️ ${ep} ${msg.substring(0, 60)}`);
     }
   }
 
