@@ -44,13 +44,14 @@ CONFIG = {
     },
     "kling": {
         "enabled": True,
-        "base_url": "https://api.klingai.com/v1/videos/kling/image2video",
+        "base_url": "https://api-beijing.klingai.com",
+        "submit_url": "https://api-beijing.klingai.com/v1/videos/image2video",
         "model": "kling-v2-6",
-        "cost_per_gen": 0,  # 每日免费积分
+        "cost_per_gen": 0,  # 新用户有试用积分
         "max_retries": 2,
         "poll_interval": 5,
-        "poll_max_wait": 180,
-        "auth_token": os.environ.get("KLING_API_TOKEN", ""),
+        "poll_max_wait": 300,
+        "api_key": os.environ.get("KLING_API_KEY", ""),  # klingai.com 简单 API Key
     },
     "kenburns": {
         "enabled": True,
@@ -333,8 +334,8 @@ def generate_seedance(image_path, output_path, prompt="", duration=5, fps=24):
 
 # ==================== 后端2: Kling/可灵 ====================
 def _curl(method, url, headers=None, data=None, timeout=30):
-    """用 curl 子进程发送 HTTP 请求（绕过 Python SSL 问题）"""
-    CURL = "/usr/bin/curl"
+    """用 curl 子进程发送 HTTP 请求（大 JSON 自动走临时文件）"""
+    CURL = shutil.which("curl") or "/usr/bin/curl"
     cmd = [CURL, "-s", "-w", "\n%{http_code}", "--connect-timeout", str(timeout),
            "--max-time", str(timeout)]
     cmd += ["-X", method]
@@ -342,7 +343,18 @@ def _curl(method, url, headers=None, data=None, timeout=30):
         for k, v in headers.items():
             cmd += ["-H", f"{k}: {v}"]
     if data:
-        cmd += ["-d", data]
+        # 大 payload 写入临时文件避免命令行参数溢出
+        if len(data) > 50000:
+            fp = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False)
+            fp.write(data)
+            fp.close()
+            cmd += ["-d", f"@{fp.name}"]
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 5)
+            finally:
+                os.unlink(fp.name)
+        else:
+            cmd += ["-d", data]
     cmd.append(url)
     
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout + 5)
@@ -358,22 +370,22 @@ def generate_kling(image_path, output_path, prompt="", duration=5, fps=24):
     import base64
 
     cfg = CONFIG["kling"]
-    if not cfg["auth_token"]:
-        return None, "NO_TOKEN"
+    if not cfg["api_key"]:
+        return None, "NO_KEY"
 
     with open(image_path, "rb") as f:
         image_b64 = base64.b64encode(f.read()).decode()
 
     payload = json.dumps({
-        "model_name": cfg["model"],
-        "image": f"data:image/png;base64,{image_b64}",
+        "model": cfg["model"],
+        "image_url": upload_image_to_url(image_path) or f"data:image/png;base64,{image_b64}",
         "prompt": prompt or "cinematic camera movement, smooth motion",
         "duration": str(int(duration)),
         "mode": "std",
     })
 
     headers = {
-        "Authorization": f"Bearer {cfg['auth_token']}",
+        "Authorization": f"Bearer {cfg['api_key']}",
         "Content-Type": "application/json",
     }
 
@@ -381,7 +393,7 @@ def generate_kling(image_path, output_path, prompt="", duration=5, fps=24):
     t0 = time.time()
 
     try:
-        body, code = _curl("POST", cfg["base_url"], headers=headers, data=payload, timeout=30)
+        body, code = _curl("POST", cfg["submit_url"], headers=headers, data=payload, timeout=30)
         if code != 200:
             print(f"[Kling] ❌ HTTP {code}: {body[:200]}")
             return None, f"HTTP_{code}"
@@ -399,8 +411,8 @@ def generate_kling(image_path, output_path, prompt="", duration=5, fps=24):
     print(f"[Kling] 📋 任务ID: {task_id}")
 
     # 轮询
-    query_url = f"{cfg['base_url']}/{task_id}"
-    query_headers = {"Authorization": f"Bearer {cfg['auth_token']}"}
+    query_url = f"{cfg['base_url']}/videos/{task_id}"
+    query_headers = {"Authorization": f"Bearer {cfg['api_key']}"}
     waited = 0
     while waited < cfg["poll_max_wait"]:
         time.sleep(cfg["poll_interval"])
@@ -605,7 +617,7 @@ def generate_video(image_path, output_path, motion="zoom_in", prompt="",
             print(f"[Router] Seedance 失败: {status}")
 
     # 2. Kling
-    if CONFIG["kling"]["enabled"] and CONFIG["kling"]["auth_token"]:
+    if CONFIG["kling"]["enabled"] and CONFIG["kling"]["api_key"]:
         print(f"[Router] 🥈 尝试: Kling/可灵")
         result, status = generate_kling(image_path, output_path, prompt, duration, fps)
         if result:

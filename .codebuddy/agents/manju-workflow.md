@@ -115,11 +115,11 @@ task(subagent_name="director",
      2. 选定适合单集时长的段落范围
      3. 找出3秒钩子 + 结尾悬念对应的原文位置
      4. 修剪冗余 → 补强视觉化
-     5. 输出改编报告到 projects/{项目名}/改编报告.md
+     5. 输出改编报告到 projects/{项目名}/scripts/改编报告.md
      改编通过标准：独立性/冲突密度/视觉可拍/结尾钩子 四项全过")
 ```
 
-**确认**：`projects/{项目名}/改编报告.md` 存在且结论为"可进入 Gate0" → 进入阶段1
+**确认**：`projects/{项目名}/scripts/改编报告.md` 存在且结论为"可进入 Gate0" → 进入阶段1
 
 如果结论为"不适合" → 告知用户，建议调整范围或换章节。
 
@@ -133,12 +133,12 @@ task(subagent_name="director",
 ```
 task(subagent_name="director", 
      prompt="对以下需求进行创意定调：{用户需求}。
-     输出定调方案到 projects/{项目名}/定调方案.md
+     输出定调方案到 projects/{项目名}/scripts/定调方案.md
      方案必须包含：具体的画风描述（含锚定关键词）、角色外貌关键词、色调色板、风格约束规则。
      完成定调后，进行 Gate1 自审，确认定调方案清晰可执行，将自审意见附在方案末尾。")
 ```
 
-**确认**：`projects/{项目名}/定调方案.md` 存在且内容完整 → 进入阶段1.5
+**确认**：`projects/{项目名}/scripts/定调方案.md` 存在且内容完整 → 进入阶段1.5
 
 ---
 
@@ -148,11 +148,11 @@ task(subagent_name="director",
 
 ```
 task(subagent_name="director",
-     prompt="Gate0故事审核：读取 projects/{项目名}/定调方案.md。
+     prompt="Gate0故事审核：读取 projects/{项目名}/scripts/定调方案.md。
      基于你的SOP知识库，结合本集题材做有品味的判断——
      不是硬套3秒冲突模版，而是判断这个故事的呼吸节奏是否合理。
      审核要点：开场设计、情绪曲线、冲突张力、意外感、结尾钩子类型。
-     输出审核报告到 projects/{项目名}/故事审核报告.md")
+     输出审核报告到 projects/{项目名}/scripts/故事审核报告.md")
 ```
 ```
 
@@ -171,13 +171,13 @@ task(subagent_name="director",
 **调度 Writer**：
 ```
 task(subagent_name="writer",
-     prompt="根据定调方案 projects/{项目名}/定调方案.md 编写分镜表。
-     输出到 projects/{项目名}/分镜表.md
+     prompt="根据定调方案 projects/{项目名}/scripts/定调方案.md 编写分镜表。
+     输出到 projects/{项目名}/scripts/分镜表.md
      Prompt要求：每个镜头必须包含英文Prompt + 画风关键词 + 角色外貌关键词 + 色调 + 构图。
      AI无法生成的文字内容（系统弹窗文本、标题字等）标注[后期叠加]。")
 ```
 
-**确认**：`projects/{项目名}/分镜表.md` 存在 → 进入阶段3
+**确认**：`projects/{项目名}/scripts/分镜表.md` 存在 → 进入阶段3
 
 ---
 
@@ -186,11 +186,11 @@ task(subagent_name="writer",
 **调度 Director**：
 ```
 task(subagent_name="director",
-     prompt="Gate2审核：读取分镜表 projects/{项目名}/分镜表.md 和定调方案 projects/{项目名}/定调方案.md。
+     prompt="Gate2审核：读取分镜表 projects/{项目名}/scripts/分镜表.md 和定调方案 projects/{项目名}/scripts/定调方案.md。
      基于你的SOP知识库（叙事动力学+视听规格+情绪工程），结合本集题材做有品味的审核——
      开场是否建立联系、情绪曲线是否有起伏、景别配比是否合理、台词是否有废话、结尾钩子是否有效。
      不是机械套模版，而是判断这个故事的呼吸节奏对不对。
-     输出审核报告到 projects/{项目名}/分镜审核报告.md。
+     输出审核报告到 projects/{项目名}/scripts/分镜审核报告.md。
      如果RETRY，报告中需包含退回Writer的精确修复指令。")
 ```
 
@@ -207,12 +207,12 @@ task(subagent_name="director",
 
 ```
 task(subagent_name="director",
-     prompt="Gate2.5音频设计：读取分镜表 projects/{项目名}/分镜表.md，
+     prompt="Gate2.5音频设计：读取分镜表 projects/{项目名}/scripts/分镜表.md，
      为每个镜头指定：
      1. 配音文案+声线（yunyang=旁白/yunxi=少年/yunjian=青年/xiaoxiao=少女）
      2. 无台词镜头必须配音效（energy_hum/heavy_impact/slide_trigger/deep_rumble/wind_fade/ambient_drone/thud/shimmer）
      3. BGM按情绪分段（low_drone/heartbeat/quirky/orchestral/fade），不允全片一首
-     输出到 projects/{项目名}/音频设计.json")
+     输出到 projects/{项目名}/audio/音频设计.json")
 ```
 
 **音频设计JSON格式：**
@@ -229,7 +229,7 @@ task(subagent_name="director",
 }
 ```
 
-**确认**：`projects/{项目名}/音频设计.json` 存在 → 进入阶段4
+**确认**：`projects/{项目名}/audio/音频设计.json` 存在 → 进入阶段4
 
 ---
 
@@ -240,7 +240,7 @@ task(subagent_name="director",
 ```
 task(subagent_name="artist",
      prompt="为镜头{N}生成图片：
-     - 读取分镜表 projects/{项目名}/分镜表.md 获取该镜头的英文Prompt
+     - 读取分镜表 projects/{项目名}/scripts/分镜表.md 获取该镜头的英文Prompt
      - 调用 node tools/generate_image.js --prompt '{英文Prompt}' --output projects/{项目名}/images/镜头{N}.png --width 1080 --height 1920
      - 工具会自动选择最优模型（有Key → z-image-turbo原生高清，无Key → 自动降级+放大）
      - 确认图片文件生成成功")
@@ -329,7 +329,7 @@ python3 -c "
 import subprocess, os, json, re
 ffmpeg = '/Users/ui/.local/bin/ffmpeg'
 video_dir = 'projects/{项目名}/videos'
-storyboard = 'projects/{项目名}/分镜表.md'
+storyboard = 'projects/{项目名}/scripts/分镜表.md'
 
 # 检查每个视频
 issues = []
@@ -369,7 +369,7 @@ else:
 **Step 1 — 音频合成（一条命令完成全部工作）：**
 ```bash
 python3 tools/compose_audio.py \
-  --design projects/{项目名}/音频设计.json \
+  --design projects/{项目名}/audio/音频设计.json \
   --output-dir projects/{项目名}
 ```
 这个命令会自动：读设计→生成TTS→合成音效→分段BGM→adelay精确混合→生成字幕SRT
@@ -378,17 +378,17 @@ python3 tools/compose_audio.py \
 ```bash
 # 拼接视频
 ffmpeg -y -f concat -safe 0 -i concat_list.txt -c:v libx264 -preset fast -crf 20 \
-  -pix_fmt yuv420p -an projects/{项目名}/video_only.mp4
+  -pix_fmt yuv420p -an projects/{项目名}/output/video_only.mp4
 
 # 合流
-ffmpeg -y -i projects/{项目名}/video_only.mp4 -i projects/{项目名}/final_audio.m4a \
+ffmpeg -y -i projects/{项目名}/output/video_only.mp4 -i projects/{项目名}/audio/final_audio.m4a \
   -c:v copy -c:a copy -shortest tmp/av.mp4
 
 # 字幕
 ffmpeg -y -i tmp/av.mp4 \
-  -vf "subtitles=projects/{项目名}/subtitles.srt:force_style='FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2'" \
+  -vf "subtitles=projects/{项目名}/subs/subtitles.srt:force_style='FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2'" \
   -c:v libx264 -preset fast -crf 22 -c:a copy \
-  projects/{项目名}/final.mp4
+  projects/{项目名}/output/final.mp4
 ```
 
 ---
@@ -404,7 +404,7 @@ task(subagent_name="director",
         BGM密度是否与题材匹配、音效打击点是否到位、色彩风格是否统一、
         剪辑节奏是否与故事呼吸一致。
         不是数拍子，是感受这个成品有没有抓住人。
-     3. 输出终审报告到 projects/{项目名}/终审报告.md
+     3. 输出终审报告到 projects/{项目名}/scripts/终审报告.md
      4. 给出最终结论：交付 / 需修复 / 不可交付")
 ```
 
@@ -422,7 +422,7 @@ task(subagent_name="director",
 ## 项目：{项目名}
 - 总镜头数：N
 - 总时长：XX秒（目标：XX秒）
-- 最终文件：projects/{项目名}/final.mp4
+- 最终文件：projects/{项目名}/output/final.mp4
 
 ## 质量审核轨迹
 | Gate | 节点 | 结论 | 重试次数 | 降级镜头 |
@@ -437,12 +437,12 @@ task(subagent_name="director",
 ## 各阶段产物
 | 阶段 | 产物 |
 |------|------|
-| 定调 | projects/{项目名}/定调方案.md |
-| 分镜 | projects/{项目名}/分镜表.md |
+| 定调 | projects/{项目名}/scripts/定调方案.md |
+| 分镜 | projects/{项目名}/scripts/分镜表.md |
 | 审核 | 各Gate审核报告 |
 | 美术 | projects/{项目名}/images/ (N张) |
 | 动画 | projects/{项目名}/videos/ (N个) |
-| 剪辑 | projects/{project名}/final.mp4 |
+| 剪辑 | projects/{项目名}/output/final.mp4 |
 
 ## ⚠️ 视频后端提醒
 | 当前后端 | 效果 | 升级条件 |

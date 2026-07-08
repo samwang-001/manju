@@ -214,14 +214,13 @@ else
   ((WARN++))
 fi
 
-# Kling (视频生成)
-if [ -n "$KLING_API_TOKEN" ]; then
-  echo "  [Kling] ${GREEN}✅ 已设置 (${KLING_API_TOKEN:0:10}...)${NC}"
-  echo "  🥈 图生视频: 每日免费66积分"
+# Kling/可灵 官方开放平台（新用户有免费试用积分）
+if [ -n "$KLING_API_KEY" ]; then
+  echo "  [Kling] ${GREEN}✅ 已设置${NC} 🥈 图生视频·官方开放平台"
   ((PASS++))
 else
-  echo "  [Kling] ${YELLOW}⚠️  未设置 KLING_API_TOKEN${NC}"
-  echo "  💡 获取: https://klingapi.com → 注册→买API计划→ export KLING_API_TOKEN=\"api-key-kling-xxx\""
+  echo "  [Kling] ${YELLOW}⚠️  未设置 KLING_API_KEY${NC}"
+  echo "  💡 获取: https://platform.klingai.com → 创建应用 → API Key"
   ((WARN++))
 fi
 
