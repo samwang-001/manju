@@ -33,7 +33,8 @@ import sys
 import tempfile
 from datetime import timedelta
 
-FFMPEG = os.environ.get("FFMPEG", "/Users/ui/.local/bin/ffmpeg")
+import shutil
+FFMPEG = shutil.which("ffmpeg") or os.environ.get("FFMPEG", "/usr/local/bin/ffmpeg")
 
 # ==================== BGM 生成器 ====================
 BGM_RECIPES = {
@@ -59,63 +60,72 @@ SFX_RECIPES = {
 
 
 def generate_sfx(name, duration, output_path):
-    """用 FFmpeg 合成音效"""
-    recipe = SFX_RECIPES.get(name)
-    if recipe is None:
-        # Create silence placeholder (keep timeline intact but skip)
-        subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-i", f"anullsrc=r=24000:cl=mono:d={duration}",
-                        "-c:a", "libmp3lame", output_path], capture_output=True, timeout=30)
-        return output_path
+    """用 FFmpeg 合成音效（预定义命令，可靠可预测）"""
+    if name == "none" or not name:
+        return None
 
-    recipe = recipe.replace("DUR", str(duration))
-    # Parse: "filter1,filter2,..." → ffmpeg filter_complex string
-    filters = recipe.split(",")
-    
-    # Build inputs and filter chain
-    inputs = []
-    filter_parts = []
-    input_idx = 0
-    
-    i = 0
-    while i < len(filters):
-        f = filters[i].strip()
-        if "=" in f and not any(f.startswith(p) for p in ["volume", "afade", "amix", "lowpass"]):
-            # It's a source filter
-            key, val = f.split("=", 1)
-            inputs.extend(["-f", "lavfi", "-i", f"[{input_idx}:a]"])
-            filter_parts.append(f"[{input_idx}:a]")
-            input_idx += 1
-        elif f.startswith("amix"):
-            # amix: combine previous inputs
-            count = int(f.split("=")[1].split(":")[0].split("=")[-1]) if "inputs=" in f else len(filter_parts)
-            inputs_str = "".join([f"[a{i}]" for i in range(count)])
-            filter_parts.append(f"{inputs_str}{f}[amix]")
-        elif f.startswith("volume="):
-            # modifier on previous output
-            prev = filter_parts.pop() if filter_parts else "amix"
-            filter_parts.append(f"{prev},{f}")
-            filter_parts[-1] = filter_parts[-1].replace("[amix],", "")
-        elif f.startswith("afade"):
-            # add fade
-            prev = filter_parts[-1] if filter_parts else "amix"
-            base, _, _ = prev.partition(",afade")
-            filter_parts[-1] = f"{base},{f}"
-        elif f.startswith("lowpass"):
-            prev = filter_parts[-1]
-            filter_parts[-1] = f"{prev},{f}"
-        i += 1
+    base_cmd = [FFMPEG, "-y", "-c:a", "libmp3lame", "-b:a", "128k", output_path]
 
-    # Simplify: use direct filter_complex string
+    sfx_cmds = {
+        "energy_hum":   [
+            "-f", "lavfi", "-i", f"sine=f=60:d={duration},volume=0.5",
+            "-f", "lavfi", "-i", f"sine=f=180:d={duration},volume=0.2",
+            "-filter_complex", "[0:a][1:a]amix=inputs=2:duration=first,afade=t=in:d=0.5:t=out:d=0.5[a]",
+            "-map", "[a]",
+        ],
+        "heavy_impact": [
+            "-f", "lavfi", "-i", f"sine=f=80:d=0.5,volume=1.2",
+            "-f", "lavfi", "-i", f"anoisesrc=d=1:color=pink,volume=0.5",
+            "-filter_complex", "[0:a]adelay=0[a0];[1:a]adelay=200[a1];[a0][a1]amix=inputs=2:duration=longest,afade=t=out:d=0.5[a]",
+            "-map", "[a]", "-t", str(duration),
+        ],
+        "slide_trigger": [
+            "-f", "lavfi", "-i", f"sine=f=300:d={duration},volume=0.3",
+            "-f", "lavfi", "-i", f"sine=f=1200:d=1,volume=0.2",
+            "-filter_complex", "[1:a]adelay=500[a1];[0:a][a1]amix=inputs=2:duration=first,afade=t=out:d=0.3[a]",
+            "-map", "[a]", "-t", str(duration),
+        ],
+        "deep_rumble":  [
+            "-f", "lavfi", "-i", f"sine=f=30:d={duration},volume=0.6",
+            "-f", "lavfi", "-i", f"sine=f=60:d={duration},volume=0.3",
+            "-filter_complex", "[0:a]volume=0.8:enable='between(t,0,1)'[a0];[a0][1:a]amix=inputs=2:duration=longest,afade=t=out:d=1[a]",
+            "-map", "[a]", "-t", str(duration),
+        ],
+        "wind_fade":    [
+            "-f", "lavfi", "-i", f"anoisesrc=d={duration}:color=white,volume=0.15,lowpass=f=600",
+            "-f", "lavfi", "-i", f"sine=f=100:d={duration},volume='0.15*(({duration}-t)/{duration})'",
+            "-filter_complex", "[0:a][1:a]amix=inputs=2:duration=first,afade=t=in:d=1:t=out:st={duration-2}:d=2[a]",
+            "-map", "[a]", "-t", str(duration),
+        ],
+        "ambient_drone": [
+            "-f", "lavfi", "-i", f"sine=f=55:d={duration},volume=0.3",
+            "-f", "lavfi", "-i", f"sine=f=88:d={duration},volume=0.15",
+            "-filter_complex", "[0:a][1:a]amix=inputs=2:duration=first,afade=t=in:d=1:t=out:d=2[a]",
+            "-map", "[a]",
+        ],
+        "thud":         [
+            "-f", "lavfi", "-i", "sine=f=50:d=0.3,volume=0.8,afade=t=out:d=0.3",
+            "-t", str(max(duration, 1)),
+        ],
+        "shimmer":      [
+            "-f", "lavfi", "-i", f"sine=f=1200:d={duration},volume='0.2*sin(2*PI*t*3)*(({duration}-t)/{duration})'",
+            "-t", str(duration),
+        ],
+    }
+
+    cmd = sfx_cmds.get(name)
+    if cmd is None:
+        return None
+
     try:
-        subprocess.run([FFMPEG, "-y"] + inputs +
-            ["-filter_complex", ",".join(filter_parts) + "[a]",
-             "-map", "[a]", "-c:a", "libmp3lame", "-b:a", "128k", output_path],
-            capture_output=True, timeout=30)
-    except:
+        subprocess.run(base_cmd[:-1] + cmd, capture_output=True, timeout=30)
+    except Exception:
         # Fallback: simple tone
-        subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-i", f"sine=f=220:d={duration},volume=0.2",
-                        "-c:a", "libmp3lame", output_path], capture_output=True, timeout=30)
-    return output_path
+        subprocess.run([FFMPEG, "-y", "-f", "lavfi", "-i",
+                        f"sine=f=220:d={duration},volume=0.15,afade=t=in:d=0.3:t=out:d=0.5",
+                        "-c:a", "libmp3lame", "-b:a", "128k", output_path],
+                       capture_output=True, timeout=30)
+    return output_path if os.path.exists(output_path) else None
 
 
 def generate_bgm_segment(style, duration, output_path):

@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# 视频合成工具 - Editor Agent 调用
-# 将多个视频片段 + 配音 + 字幕 + BGM 合成为最终视频
+# ⚠️ 已弃用：workflow 现在使用直接 FFmpeg 命令合成
+# 保留作为 FFmpeg 流水线参考
 #
 # 用法:
 #   bash tools/compose_video.sh --project projects/demo
@@ -10,7 +10,19 @@
 
 set -e
 
-# ==================== macOS 兼容 timeout ====================
+# ==================== macOS 兼容函数 ====================
+# realpath 替代（macOS 没有此命令）
+_realpath() {
+    if command -v realpath &>/dev/null; then
+        realpath "$1"
+    elif command -v python3 &>/dev/null; then
+        python3 -c "import os; print(os.path.realpath('$1'))"
+    else
+        echo "$(cd "$(dirname "$1")" && pwd -P)/$(basename "$1")"
+    fi
+}
+
+# timeout 替代
 if command -v gtimeout &> /dev/null; then
   _to() { gtimeout "$@"; }
 elif command -v timeout &> /dev/null; then
@@ -91,7 +103,7 @@ echo "[Editor] 步骤1: 拼接视频片段..."
 
 CONCAT_LIST="$TMP_DIR/concat.txt"
 for v in $VIDEOS; do
-  echo "file '$(realpath "$v")'" >> "$CONCAT_LIST"
+  echo "file '$(_realpath "$v")'" >> "$CONCAT_LIST"
 done
 
 CONCAT_VIDEO="$TMP_DIR/concat_video.mp4"
@@ -109,7 +121,7 @@ echo "[Editor] 步骤2: 拼接配音..."
 if [ -n "$AUDIO" ]; then
   AUDIO_LIST="$TMP_DIR/audio_list.txt"
   for a in $AUDIO; do
-    echo "file '$(realpath "$a")'" >> "$AUDIO_LIST"
+    echo "file '$(_realpath "$a")'" >> "$AUDIO_LIST"
   done
 
   CONCAT_AUDIO="$TMP_DIR/concat_audio.mp3"

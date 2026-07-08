@@ -166,10 +166,16 @@ async function downloadFromUrl(imageUrl, outputPath) {
 }
 
 // ==================== 图片分析 ====================
+function escapePath(p) {
+  // 安全转义文件路径中的特殊字符，防止命令注入
+  return p.replace(/'/g, "'\\''");
+}
+
 function getResolution(filePath) {
   try {
+    const safePath = escapePath(filePath);
     const info = execSync(
-      `${PYTHON3} -c "import cv2;img=cv2.imread('${filePath}');print(img.shape[1],img.shape[0])"`,
+      `${PYTHON3} -c "import cv2;img=cv2.imread('${safePath}');print(img.shape[1],img.shape[0])"`,
       { timeout: 5000, encoding: 'utf8' }
     ).trim();
     const [w, h] = info.split(' ').map(Number);
@@ -196,7 +202,9 @@ function upscaleImage(outputPath, targetW, targetH) {
   const from = res ? `${res.width}×${res.height}` : '?';
   console.log(`  🔧 放大 ${from} → ${targetW}×${targetH}...`);
   try {
-    execSync(`${PYTHON3} "${upscaleScript}" --input "${outputPath}" --output "${outputPath}" --width ${targetW} --height ${targetH}`,
+    const safeScript = escapePath(upscaleScript);
+    const safeOutput = escapePath(outputPath);
+    execSync(`${PYTHON3} "${safeScript}" --input "${safeOutput}" --output "${safeOutput}" --width ${targetW} --height ${targetH}`,
       { stdio: 'pipe', timeout: 30000 });
   } catch { console.log(`  ⚠️ 放大失败，保持原分辨率`); }
 }

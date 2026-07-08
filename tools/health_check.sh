@@ -95,7 +95,7 @@ echo ""
 
 # ===== 系统依赖 =====
 echo -e "${YELLOW}[系统依赖]${NC}"
-check_version "FFmpeg" /Users/ui/.local/bin/ffmpeg -version
+check_version "FFmpeg" ffmpeg -version
 check_version "Python3" python3 --version
 check_version "Node.js" node --version
 

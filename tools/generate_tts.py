@@ -24,10 +24,15 @@ import asyncio
 import base64
 import json
 import os
+import shutil
+import subprocess
 import sys
 import traceback
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+
+# FFmpeg 自动检测
+FFMPEG = shutil.which("ffmpeg") or "/usr/local/bin/ffmpeg"
 
 # ==================== 配置 ====================
 VOLC_APP_ID = os.environ.get("VOLCENGINE_APP_ID", "")
@@ -93,21 +98,30 @@ def volc_tts_generate(text, voice_key, output_path, rate="+0%"):
     # 流式响应：每行是一个 JSON，包含 base64 音频片段
     audio_chunks = []
     content_type = resp.headers.get("Content-Type", "")
+    raw_body = resp.read()
+
     if "application/json" in content_type or "text/event-stream" in content_type:
-        for line in resp.read().decode().split("\n"):
+        for line in raw_body.decode(errors="replace").split("\n"):
             line = line.strip()
             if not line or line.startswith(":"):
                 continue
             try:
                 chunk = json.loads(line)
-                b64 = chunk.get("audio", {}).get("data", "")
+                # Support both {"audio":{"data":"..."}} and flat {"data":"..."}
+                if "audio" in chunk and isinstance(chunk["audio"], dict):
+                    b64 = chunk["audio"].get("data", "")
+                else:
+                    b64 = chunk.get("data", "")
                 if b64:
                     audio_chunks.append(base64.b64decode(b64))
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, base64.binascii.Error):
                 continue
     else:
-        # 非流式直接返回
-        audio_chunks = [resp.read()]
+        # Direct binary or unrecognized format → try raw bytes
+        if raw_body and len(raw_body) > 100:
+            audio_chunks = [raw_body]
+        else:
+            raise RuntimeError(f"EMPTY_RESPONSE: {len(raw_body)} bytes")
 
     if not audio_chunks:
         raise RuntimeError("EMPTY_AUDIO")
@@ -155,10 +169,9 @@ async def gen_one(text, voice_key, output_path, rate="+0%"):
 
     # Tier 🟢: FFmpeg sine 兜底（不可能到达这里，edge-tts 永远可用）
     print(f"  🟢 FFmpeg兜底 '{text}'")
-    import subprocess
     cmd = [
-        "/Users/ui/.local/bin/ffmpeg", "-y",
-        "-f", "lavfi", "-i", f"sine=f=220:d=2,volume=0.1",
+        FFMPEG, "-y",
+        "-f", "lavfi", "-i", "sine=f=220:d=2,volume=0.1",
         "-c:a", "libmp3lame", output_path,
     ]
     subprocess.run(cmd, capture_output=True, timeout=10)

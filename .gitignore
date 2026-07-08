@@ -1,9 +1,14 @@
 node_modules/
 .DS_Store
+.localized
+Thumbs.db
 *.pyc
 __pycache__/
 publish/
 .env
+*.log
+*.token
+credentials*
 /tmp/
 *.mp4
 *.mp3

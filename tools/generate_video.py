@@ -20,6 +20,7 @@
 import argparse
 import json
 import os
+import shutil
 import sys
 import subprocess
 import time
@@ -526,7 +527,7 @@ def generate_ken_burns(image_path, output_path, duration=3, motion="zoom_in", fp
 def generate_static_video(image_path, output_path, duration=3, fps=24):
     """FFmpeg 图片转静态视频"""
     os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
-    ffmpeg = os.environ.get("FFMPEG", "/Users/ui/.local/bin/ffmpeg")
+    ffmpeg = shutil.which("ffmpeg") or os.environ.get("FFMPEG", "/usr/local/bin/ffmpeg")
     cmd = [
         ffmpeg, "-y", "-loop", "1", "-i", image_path,
         "-t", str(duration), "-r", str(fps),
