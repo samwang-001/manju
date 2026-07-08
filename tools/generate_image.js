@@ -25,10 +25,15 @@ const PYTHON3 = '/usr/bin/python3';
 
 // ==================== 配置 ====================
 const CONFIG = {
-  // 火山引擎 Seedream 直连（🥇最高优先级）
-  VOLCENGINE_KEY: process.env.VOLCENGINE_API_KEY || '',
-  VOLCENGINE_ARK_URL: 'https://ark.cn-beijing.volces.com/api/v3/images/generations',
-  VOLCENGINE_MODEL: 'doubao-seedream-4.5-251128',
+  // 火山引擎 图片模型列表（按优先级排列，自动尝试）
+  VOLCENGINE_MODELS: [
+    'doubao-seedance-4.5-250115',    // 200张免费
+    'doubao-seedance-4.0-250115',    // 173/200张
+    'doubao-seedance-3.0-0i-250115', // 199/200张
+    'doubao-seedance-3.0-pro-250115',// 200/200张
+    'doubao-seedance-5.0-lite-250115',// 50/50张
+    'doubao-seedance-1.0-pro-250115',// tokens
+  ],
 
   // Pollinations 代理（🥈🥉🏅备用）
   POLLINATIONS_KEY: process.env.POLLINATIONS_KEY || '',
@@ -212,44 +217,59 @@ function upscaleImage(outputPath, targetW, targetH) {
 // ==================== 生成后端 ====================
 
 async function generateSeedreamDirect(prompt, outputPath, width, height) {
-  /** 🥇 火山引擎 Seedream 直连 */
+  /** 🥇 火山引擎 多模型尝试 */
   const apiKey = CONFIG.VOLCENGINE_KEY;
   if (!apiKey) return null;
 
-  // 计算合适的 size 参数 (Seedream 4.5 支持 2K/4K)
+  // 计算 size
   const totalPixels = width * height;
   let size = '2K';
   if (totalPixels > 4000000) size = '4K';
   if (totalPixels < 1500000) size = '1K';
 
-  const body = {
-    model: CONFIG.VOLCENGINE_MODEL,
-    prompt: prompt,
-    size: size,
-    output_format: 'png',
-    watermark: false,
-    response_format: 'url',
-    force_single: true,
-  };
+  for (const model of CONFIG.VOLCENGINE_MODELS) {
+    const body = {
+      model: model,
+      prompt: prompt,
+      size: size,
+      output_format: 'png',
+      watermark: false,
+      response_format: 'url',
+      force_single: true,
+    };
 
-  console.log(`[Artist] 🥇 Seedream直连 | ${size} | 火山引擎 Ark`);
-  const resp = await jsonPost(CONFIG.VOLCENGINE_ARK_URL, body, apiKey);
+    console.log(`  🥇 火山引擎 ${model} | ${size}`);
+    try {
+      const resp = await jsonPost(CONFIG.VOLCENGINE_ARK_URL, body, apiKey);
 
-  if (resp.status === 401 || resp.status === 403) {
-    throw new Error('AUTH_FAILED');
-  }
-  if (resp.status === 402) {
-    throw new Error('INSUFFICIENT_BALANCE');
-  }
-  if (resp.status !== 200) {
-    const msg = resp.body?.error?.message || resp.body?.message || `HTTP_${resp.status}`;
-    throw new Error(msg.substring(0, 80));
+      if (resp.status === 401 || resp.status === 403) {
+        throw new Error('AUTH_FAILED');
+      }
+      if (resp.status === 402) {
+        console.log(`    ⚠️ ${model} 余额不足，试下一模型`);
+        continue;
+      }
+      if (resp.status !== 200) {
+        const msg = resp.body?.error?.message || resp.body?.message || `HTTP_${resp.status}`;
+        console.log(`    ⚠️ ${model} ${msg.substring(0, 60)}`);
+        continue;
+      }
+
+      const imageUrl = resp.body?.data?.[0]?.url;
+      if (!imageUrl) {
+        console.log(`    ⚠️ ${model} 无图片URL`);
+        continue;
+      }
+      await downloadFromUrl(imageUrl, outputPath);
+      console.log(`    ✅ ${model} 成功`);
+      return outputPath;
+    } catch (err) {
+      const msg = err.message || String(err);
+      console.log(`    ⚠️ ${model} ${msg.substring(0, 60)}`);
+    }
   }
 
-  const imageUrl = resp.body?.data?.[0]?.url;
-  if (!imageUrl) throw new Error('NO_IMAGE_URL');
-  await downloadFromUrl(imageUrl, outputPath);
-  return outputPath;
+  throw new Error('ALL_VOLC_MODELS_FAILED');
 }
 
 async function tryGenerate(modelName, prompt, outputPath, width, height, label) {
