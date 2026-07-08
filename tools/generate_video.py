@@ -46,7 +46,8 @@ CONFIG = {
         "enabled": True,
         "base_url": "https://api-beijing.klingai.com",
         "submit_url": "https://api-beijing.klingai.com/v1/videos/image2video",
-        "model": "kling-v2-6",
+        "model": "kling-v2.6-pro",
+        "mode": "pro",  # 专业模式，1080p
         "cost_per_gen": 0,  # 新用户有试用积分
         "max_retries": 2,
         "poll_interval": 5,

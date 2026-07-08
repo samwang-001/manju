@@ -224,6 +224,26 @@ else
   ((WARN++))
 fi
 
+# Freesound (音效)
+if [ -n "$FREESOUND_API_KEY" ]; then
+  echo "  [Freesound] ${GREEN}✅ 已设置${NC} 免费音效下载"
+  ((PASS++))
+else
+  echo "  [Freesound] ${YELLOW}⚠️  未设置 FREESOUND_API_KEY${NC}"
+  echo "  💡 获取: https://freesound.org/apiv2/apply/"
+  ((WARN++))
+fi
+
+# 火山豆包 TTS (配音)
+if [ -n "$DOUBAO_APP_ID" ] && [ -n "$DOUBAO_ACCESS_KEY" ]; then
+  echo "  [豆包TTS] ${GREEN}✅ 已设置${NC} 2万字符免费·中文最自然"
+  ((PASS++))
+else
+  echo "  [豆包TTS] ${YELLOW}⚠️  未设置 DOUBAO_APP_ID + DOUBAO_ACCESS_KEY${NC}"
+  echo "  💡 获取: https://console.volcengine.com/speech/app → 创建应用"
+  ((WARN++))
+fi
+
 echo ""
 
 # ===== 汇总 =====

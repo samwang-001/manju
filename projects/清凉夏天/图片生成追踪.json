@@ -1,0 +1,29 @@
+{
+  "generations": [
+    {
+      "shot": "镜头01",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-08T08:57:08.830Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头02",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-08T08:57:26.214Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头03",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-08T08:57:43.018Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    }
+  ],
+  "summary": "共3张 | 成功3 | 后端:{\"seedream-direct\":3} | 💰$0.450"
+}

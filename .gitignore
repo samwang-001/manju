@@ -18,3 +18,4 @@ projects/*/videos/
 projects/*/audio/
 projects/*/bgm/
 projects/*/output/
+.bgm_library/
