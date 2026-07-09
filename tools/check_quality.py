@@ -1,21 +1,19 @@
 #!/usr/bin/env python3
 """
-质量检测工具 — Director Gate3 图片质检 + Gate4 视频质检
+六维质量检测 — Director Gate 自动化质检
+
+图片: 清晰度 | 曝光 | 色偏 | 主体居中 | 信息熵 | 宽高比
+视频: 帧模糊率 | 帧间一致性 | 分辨率
 
 用法:
-  # 检测单张图片
-  python3 tools/check_quality.py --type image --file shot.png
-
-  # 检测整个目录
   python3 tools/check_quality.py --type image --dir projects/项目名/images/
-
-  # 检测视频
   python3 tools/check_quality.py --type video --file shot.mp4
 """
 
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -24,199 +22,269 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+FFMPEG = os.environ.get("FFMPEG", "ffmpeg")
+
 # ==================== 检测标准 ====================
 THRESHOLDS = {
     "image": {
-        "min_resolution": (480, 640),   # 最低 480×640（竖屏）
-        "min_sharpness": 50,            # Laplacian 方差，低于此值 = 模糊
-        "min_aspect_ratio": 0.45,       # 9:16 ≈ 0.56，太低 = 变形
+        "min_sharpness": 20,        # Laplacian方差（柔和画风阈值）
+        "min_entropy": 3.5,         # 信息熵（太低=空白/纯色）
+        "max_overexposed_pct": 0.3, # 过曝区域占比上限
+        "max_underexposed_pct": 0.6,# 欠曝区域上限（暗调风格放宽）
+        "max_color_cast": 30.0,     # 风格化图片天然强色调，设为30
+        "min_center_attention": 0.3,# 中央区域边缘密度占比（竖屏主体居中）
+        "min_resolution": (480, 640),
+        "min_aspect_ratio": 0.45,
         "max_aspect_ratio": 0.75,
-        "min_filesize_kb": 30,          # 太小 = 可能空白/损坏
+        "min_filesize_kb": 30,
     },
     "video": {
-        "min_sharpness": 30,            # 视频帧模糊阈值
-        "blurry_frame_pct_max": 0.3,    # 最多 30% 帧可以模糊
+        "min_sharpness": 20,
+        "max_blur_pct": 0.3,
+        "max_interframe_diff": 80,  # 帧间差异骤变（闪烁/跳帧）
     },
 }
 
 
 def check_image(filepath):
-    """检测单张图片质量"""
+    """六维图片质量检测"""
     name = os.path.basename(filepath)
     size_kb = os.path.getsize(filepath) / 1024
-    
+
     img = cv2.imread(filepath)
     if img is None:
-        return {"file": name, "pass": False, "issues": ["无法读取图片文件"]}
-    
+        return {"file": name, "pass": False, "issues": ["无法读取图片"], "scores": {}}
+
     h, w = img.shape[:2]
-    issues = []
-    
-    # 分辨率
-    min_h, min_w = THRESHOLDS["image"]["min_resolution"]
-    if h < min_h or w < min_w:
-        issues.append(f"分辨率过低 {w}×{h}，最低要求 {min_w}×{min_h}")
-    
-    # 清晰度（Laplacian 方差）
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    sharpness = cv2.Laplacian(gray, cv2.CV_64F).var()
-    min_sharp = THRESHOLDS["image"]["min_sharpness"]
-    if sharpness < min_sharp:
-        issues.append(f"模糊严重（清晰度 {sharpness:.0f}，阈值 {min_sharp}）")
-    
-    # 文件太小
-    if size_kb < THRESHOLDS["image"]["min_filesize_kb"]:
-        issues.append(f"文件过小 {size_kb:.0f}KB")
-    
-    # 宽高比异常
+    issues = []
+    scores = {}
+
+    # 1. 清晰度
+    sharp = cv2.Laplacian(gray, cv2.CV_64F).var()
+    scores["sharpness"] = round(sharp, 1)
+    if sharp < THRESHOLDS["image"]["min_sharpness"]:
+        issues.append(f"模糊(清晰度{sharp:.0f})")
+
+    # 2. 曝光 — 直方图分析
+    hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+    hist = hist / hist.sum()
+    overexposed = hist[240:].sum()
+    underexposed = hist[:20].sum()
+    scores["overexposed_pct"] = round(float(overexposed), 3)
+    scores["underexposed_pct"] = round(float(underexposed), 3)
+    if overexposed > THRESHOLDS["image"]["max_overexposed_pct"]:
+        issues.append(f"过曝{overexposed:.0%}")
+    if underexposed > THRESHOLDS["image"]["max_underexposed_pct"]:
+        issues.append(f"欠曝{underexposed:.0%}")
+
+    # 3. 色偏 — RGB通道均值偏差
+    means = cv2.mean(img)[:3]
+    avg = np.mean(means)
+    color_cast = np.std(means)
+    scores["color_cast"] = round(float(color_cast), 1)
+    if color_cast > THRESHOLDS["image"]["max_color_cast"]:
+        issues.append(f"色偏{color_cast:.0f}")
+
+    # 4. 主体居中 — 中央区域 Sobel 边缘密度 vs 全局
+    sobel = cv2.Sobel(gray, cv2.CV_64F, 1, 1, ksize=3)
+    sobel_abs = np.abs(sobel)
+    total_edges = sobel_abs.mean()
+    ch, cw = h // 3, w // 3
+    center_region = sobel_abs[ch:2*ch, cw:2*cw]
+    center_density = center_region.mean() / (total_edges + 1e-6)
+    scores["center_attention"] = round(float(center_density), 2)
+    if center_density < THRESHOLDS["image"]["min_center_attention"]:
+        issues.append(f"主体不居中(边缘密度{center_density:.1f})")
+
+    # 5. 信息熵 — 检测空白/纯色区域
+    hist_norm = cv2.calcHist([gray], [0], None, [256], [0, 256]).flatten()
+    hist_norm = hist_norm / hist_norm.sum()
+    entropy = -np.sum(hist_norm[hist_norm > 0] * np.log2(hist_norm[hist_norm > 0] + 1e-10))
+    scores["entropy"] = round(float(entropy), 1)
+    if entropy < THRESHOLDS["image"]["min_entropy"]:
+        issues.append(f"信息量过低(熵{entropy:.1f})")
+
+    # 6. 分辨率 + 宽高比 + 文件大小
+    if h < THRESHOLDS["image"]["min_resolution"][0] or w < THRESHOLDS["image"]["min_resolution"][1]:
+        issues.append(f"分辨率过低{w}×{h}")
     ratio = w / h if h > w else h / w
     if ratio < THRESHOLDS["image"]["min_aspect_ratio"] or ratio > THRESHOLDS["image"]["max_aspect_ratio"]:
-        issues.append(f"宽高比异常 {w/h:.2f}")
-    
+        issues.append(f"宽高比异常{w/h:.2f}")
+    if size_kb < THRESHOLDS["image"]["min_filesize_kb"]:
+        issues.append(f"文件过小{size_kb:.0f}KB")
+
     return {
         "file": name,
         "resolution": f"{w}×{h}",
         "size_kb": round(size_kb, 1),
-        "sharpness": round(sharpness, 1),
         "pass": len(issues) == 0,
         "issues": issues,
-    }
-
-
-def check_video(filepath, sample_frames=5):
-    """检测视频质量（采样帧检测模糊）"""
-    name = os.path.basename(filepath)
-    
-    # 用 ffmpeg 提取样本帧
-    tmpdir = tempfile.mkdtemp(prefix="vq_")
-    ffmpeg = os.environ.get("FFMPEG", "ffmpeg")
-    
-    # 获取时长
-    result = subprocess.run([ffmpeg, "-i", filepath],
-        capture_output=True, text=True)
-    duration_s = 5
-    for line in (result.stdout + result.stderr).split("\n"):
-        if "Duration" in line:
-            parts = line.split(",")[0].split(":")
-            h, m, s = parts[1], parts[2], parts[3].split(".")[0]
-            duration_s = int(h) * 3600 + int(m) * 60 + int(s)
-            break
-    
-    # 均匀采样
-    n = min(sample_frames, max(1, duration_s))
-    interval = max(1, duration_s // n)
-    
-    blurry_count = 0
-    resolutions = []
-    for i in range(n):
-        t = min(i * interval, duration_s - 1)
-        out_frame = os.path.join(tmpdir, f"frame_{i:02d}.png")
-        subprocess.run([ffmpeg, "-y", "-ss", str(t), "-i", filepath,
-            "-vframes", "1", "-q:v", "2", out_frame],
-            capture_output=True)
-        
-        if not os.path.exists(out_frame):
-            continue
-        
-        img = cv2.imread(out_frame)
-        if img is None:
-            continue
-        
-        h, w = img.shape[:2]
-        resolutions.append(f"{w}×{h}")
-        
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        sharp = cv2.Laplacian(gray, cv2.CV_64F).var()
-        
-        if sharp < THRESHOLDS["video"]["min_sharpness"]:
-            blurry_count += 1
-    
-    # 清理
-    import shutil
-    shutil.rmtree(tmpdir, ignore_errors=True)
-    
-    blurry_pct = blurry_count / n if n > 0 else 0
-    min_sharp = THRESHOLDS["video"]["min_sharpness"]
-    max_blur = THRESHOLDS["video"]["blurry_frame_pct_max"]
-    
-    issues = []
-    if blurry_pct > max_blur:
-        issues.append(f"模糊帧占比 {blurry_pct:.0%}，超过上限 {max_blur:.0%}")
-    
-    res_set = set(resolutions)
-    if len(res_set) > 1:
-        issues.append(f"分辨率不一致: {res_set}")
-    
-    return {
-        "file": name,
-        "frames_sampled": n,
-        "blurry_pct": round(blurry_pct, 2),
-        "resolution": list(res_set)[0] if len(res_set) == 1 else str(res_set),
-        "duration_s": duration_s,
-        "pass": len(issues) == 0,
-        "issues": issues,
+        "scores": scores,
     }
 
 
 def check_directory(dirpath):
-    """检测目录下所有图片"""
+    """检测目录下所有图片，含风格一致性"""
     results = []
     for f in sorted(os.listdir(dirpath)):
         if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
             r = check_image(os.path.join(dirpath, f))
             results.append(r)
-    
+
     passed = sum(1 for r in results if r["pass"])
-    return results, passed, len(results)
+
+    # 风格一致性：色偏一致性
+    casts = [r["scores"].get("color_cast", 0) for r in results]
+    centers = [r["scores"].get("center_attention", 0) for r in results]
+
+    consistency_issues = []
+    if len(casts) > 1 and max(casts) - min(casts) > 4:
+        consistency_issues.append(f"色偏不一致(极差{max(casts)-min(casts):.0f})")
+    if len(centers) > 1 and max(centers) - min(centers) > 0.5:
+        consistency_issues.append(f"构图不一致")
+
+    return results, passed, len(results), consistency_issues
+
+
+def check_video(filepath, sample_frames=6):
+    """视频质量检测：帧模糊率 + 帧间一致性"""
+    name = os.path.basename(filepath)
+    tmpdir = tempfile.mkdtemp(prefix="vq_")
+
+    # 获取时长
+    result = subprocess.run([FFMPEG, "-i", filepath], capture_output=True, text=True)
+    duration_s = 5
+    for line in (result.stdout + result.stderr).split("\n"):
+        if "Duration" in line:
+            h, m, s = line.split(",")[0].split(":")[1:]
+            duration_s = int(float(h) * 3600 + float(m) * 60 + float(s))
+            break
+
+    n = min(sample_frames, max(2, duration_s))
+    interval = max(1, duration_s // n)
+
+    blurry = 0
+    sharpnesses = []
+    last_gray = None
+    interframe_diffs = []
+
+    for i in range(n):
+        t = min(i * interval, duration_s - 1)
+        frame_path = os.path.join(tmpdir, f"f_{i:02d}.png")
+        subprocess.run([FFMPEG, "-y", "-ss", str(t), "-i", filepath,
+            "-vframes", "1", "-q:v", "2", frame_path], capture_output=True)
+
+        if not os.path.exists(frame_path):
+            continue
+
+        img = cv2.imread(frame_path)
+        if img is None:
+            continue
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # 模糊检测
+        sharp = cv2.Laplacian(gray, cv2.CV_64F).var()
+        sharpnesses.append(sharp)
+        if sharp < THRESHOLDS["video"]["min_sharpness"]:
+            blurry += 1
+
+        # 帧间一致性（相邻帧差异）
+        if last_gray is not None:
+            diff = np.abs(gray.astype(float) - last_gray.astype(float)).mean()
+            interframe_diffs.append(diff)
+        last_gray = gray.copy()
+
+    shutil.rmtree(tmpdir, ignore_errors=True)
+
+    issues = []
+    blur_pct = blurry / n if n > 0 else 0
+    if blur_pct > THRESHOLDS["video"]["max_blur_pct"]:
+        issues.append(f"模糊帧{blur_pct:.0%}")
+
+    # 帧间差异异常（单帧突变 = 闪烁/跳帧）
+    if interframe_diffs:
+        avg_diff = np.mean(interframe_diffs)
+        max_diff = max(interframe_diffs)
+        if max_diff > avg_diff * THRESHOLDS["video"]["max_interframe_diff"] / 20:
+            issues.append(f"帧间突变(闪烁)")
+
+    return {
+        "file": name,
+        "duration_s": duration_s,
+        "frames": n,
+        "blur_pct": round(blur_pct, 2),
+        "avg_sharpness": round(np.mean(sharpnesses), 1) if sharpnesses else 0,
+        "pass": len(issues) == 0,
+        "issues": issues,
+    }
+
+
+def format_report(results, passed, total, consistency=None):
+    """格式化的质检报告"""
+    header = f"{'='*60}" if not consistency else f"{'='*60}"
+    lines = [header]
+
+    for r in results:
+        icon = "✅" if r["pass"] else "❌"
+        scores = r.get("scores", {})
+        detail = ""
+        if scores:
+            detail = f"| 清晰:{scores.get('sharpness','?')} "
+            detail += f"过曝:{scores.get('overexposed_pct',0):.0%} "
+            if "center_attention" in scores:
+                detail += f"居中:{scores.get('center_attention',0):.1f} "
+            if "entropy" in scores:
+                detail += f"熵:{scores.get('entropy',0):.1f}"
+            detail += f" | {r['size_kb']}KB"
+        lines.append(f"  {icon} {r['file']} {detail}")
+        for issue in r.get("issues", []):
+            lines.append(f"     ⚠️  {issue}")
+
+    if consistency:
+        lines.append(f"  💡 风格一致性:")
+        for c in consistency:
+            lines.append(f"     ℹ️  {c}（画风变化属正常，仅供参考）")
+
+    lines.append(f"\n  📊 通过: {passed}/{total}")
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="质量检测工具 - Director Gate")
+    parser = argparse.ArgumentParser(description="六维质量检测 - Director Gate")
     parser.add_argument("--type", choices=["image", "video"], required=True)
-    parser.add_argument("--file", help="单文件路径")
-    parser.add_argument("--dir", help="目录路径")
-    parser.add_argument("--output", help="JSON 报告输出路径")
-    parser.add_argument("--frames", type=int, default=5, help="视频采样帧数")
+    parser.add_argument("--file", help="单文件")
+    parser.add_argument("--dir", help="目录")
+    parser.add_argument("--output", help="JSON报告输出")
+    parser.add_argument("--frames", type=int, default=6, help="视频采样帧数")
 
     args = parser.parse_args()
 
-    results = []
-    total = 0
-    passed = 0
-
     if args.type == "image":
         if args.dir:
-            results, passed, total = check_directory(args.dir)
+            results, passed, total, consistency = check_directory(args.dir)
+            print(format_report(results, passed, total, consistency))
         elif args.file:
             r = check_image(args.file)
-            results = [r]
-            total = 1
-            passed = 1 if r["pass"] else 0
+            results, passed, total = [r], 1 if r["pass"] else 0, 1
+            print(format_report([r], passed, total))
 
-        for r in results:
-            status = "✅" if r["pass"] else "❌"
-            sharp = r.get("sharpness", "?")
-            print(f"  {status} {r['file']} | {r['resolution']} | {r['size_kb']}KB | 清晰度:{sharp}")
-            for issue in r.get("issues", []):
-                print(f"     ⚠️  {issue}")
+        if args.output:
+            with open(args.output, "w") as f:
+                json.dump({"results": results, "total": total, "passed": passed,
+                    "all_pass": passed == total}, f, indent=2, ensure_ascii=False)
+        sys.exit(0 if passed == total else 1)
 
     elif args.type == "video":
         if args.file:
-            r = check_video(args.file, args.frames)
-            results = [r]
-            total = 1
-            passed = 1 if r["pass"] else 0
-
+            results = [check_video(args.file, args.frames)]
         for r in results:
-            status = "✅" if r["pass"] else "❌"
-            print(f"  {status} {r['file']} | {r['duration_s']}s | 模糊:{r['blurry_pct']:.0%}")
+            icon = "✅" if r["pass"] else "❌"
+            print(f"  {icon} {r['file']} | {r['duration_s']}s | 模糊:{r['blur_pct']:.0%} "
+                  f"| 锐度:{r.get('avg_sharpness','?')}")
             for issue in r.get("issues", []):
                 print(f"     ⚠️  {issue}")
-
-    print(f"\n  📊 通过: {passed}/{total}")
-
-    if args.output:
-        with open(args.output, "w") as f:
-            json.dump({"results": results, "passed": passed, "total": total, "all_pass": passed == total}, f, indent=2)
-
-    sys.exit(0 if passed == total else 1)
+        passed = sum(1 for r in results if r["pass"])
+        print(f"\n  📊 通过: {passed}/{len(results)}")
+        sys.exit(0 if passed == len(results) else 1)

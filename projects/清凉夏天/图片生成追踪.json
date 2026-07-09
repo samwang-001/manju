@@ -23,7 +23,23 @@
       "timestamp": "2026-07-08T08:57:43.018Z",
       "cost": 0.15,
       "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头01",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-09T07:44:07.668Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头03",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-09T07:44:28.324Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
     }
   ],
-  "summary": "共3张 | 成功3 | 后端:{\"seedream-direct\":3} | 💰$0.450"
+  "summary": "共5张 | 成功5 | 后端:{\"seedream-direct\":5} | 💰$0.750"
 }
