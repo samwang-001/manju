@@ -28,63 +28,53 @@ import numpy as np
 FFMPEG = os.environ.get("FFMPEG", "ffmpeg")
 MODEL_DIR = os.path.expanduser("~/.manju_models")
 
-# ==================== 人脸检测模型（首次自动下载） ====================
-FACE_MODEL_FILES = {
-    "prototxt": os.path.join(MODEL_DIR, "face_deploy.prototxt"),
-    "caffemodel": os.path.join(MODEL_DIR, "face_res10.caffemodel"),
-}
-FACE_MODEL_URLS = {
-    "prototxt": "https://cdn.jsdelivr.net/gh/opencv/opencv_extra@master/testdata/dnn/opencv_face_detector.prototxt",
-    "caffemodel": "https://cdn.jsdelivr.net/gh/opencv/opencv_3rdparty@dnn_samples_face_detector_20180205_fp16/res10_300x300_ssd_iter_140000_fp16.caffemodel",
-}
+# ==================== 人脸检测模型 ====================
+# 动漫人脸 LBP Cascade（132KB，从gitee下载，国内可访问）
+ANIME_CASCADE = os.path.join(MODEL_DIR, "lbpcascade_animeface.xml")
+ANIME_URL = "https://gitee.com/chaofeili/lbpcascade_animeface/raw/master/lbpcascade_animeface.xml"
 
-_face_net = None
+_anime_cascade = None
 
-def get_face_detector():
-    """获取人脸检测器（懒加载+自动下载模型）"""
-    global _face_net
-    if _face_net is not None:
-        return _face_net
 
+def _download_file(url, path):
+    """下载文件（静默处理失败）"""
+    if os.path.exists(path) and os.path.getsize(path) > 1000:
+        return True
     os.makedirs(MODEL_DIR, exist_ok=True)
+    try:
+        urllib.request.urlretrieve(url, path)
+        return os.path.getsize(path) > 1000
+    except Exception:
+        return False
 
-    # 下载模型
-    for key, path in FACE_MODEL_FILES.items():
-        if not os.path.exists(path):
-            try:
-                urllib.request.urlretrieve(FACE_MODEL_URLS[key], path)
-            except Exception:
-                return None  # 下载失败，降级
 
-    if not all(os.path.exists(p) for p in FACE_MODEL_FILES.values()):
+def get_anime_detector():
+    """动漫脸 LBP Cascade 检测器"""
+    global _anime_cascade
+    if _anime_cascade is not None:
+        return _anime_cascade
+    if not _download_file(ANIME_URL, ANIME_CASCADE):
         return None
-
-    _face_net = cv2.dnn.readNetFromCaffe(
-        FACE_MODEL_FILES["prototxt"],
-        FACE_MODEL_FILES["caffemodel"]
-    )
-    return _face_net
+    _anime_cascade = cv2.CascadeClassifier(ANIME_CASCADE)
+    return _anime_cascade if not _anime_cascade.empty() else None
 
 
 def detect_faces(img):
-    """检测图片中的人脸，返回 [(confidence, x, y, w, h), ...]"""
-    net = get_face_detector()
-    if net is None:
-        return []
-
-    h, w = img.shape[:2]
-    blob = cv2.dnn.blobFromImage(img, 1.0, (300, 300), [104, 117, 123], False, False)
-    net.setInput(blob)
-    detections = net.forward()
-
-    faces = []
-    for i in range(detections.shape[2]):
-        confidence = detections[0, 0, i, 2]
-        if confidence > 0.5:
-            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
-            x, y, x2, y2 = box.astype(int)
-            faces.append((confidence, x, y, x2 - x, y2 - y))
-    return faces
+    """
+    动漫人脸检测（LBP Cascade）
+    返回 [(source, x, y, w, h), ...]
+    注：OpenCV 5.0 移除了 Caffe/SSD 真人脸检测。如需要真人脸，
+    可安装 MediaPipe: pip3 install mediapipe
+    """
+    all_faces = []
+    cascade = get_anime_detector()
+    if cascade is not None:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
+        faces = cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=3, minSize=(40, 40))
+        for (x, y, fw, fh) in faces:
+            all_faces.append(("anime", x, y, fw, fh))
+    return all_faces
 
 
 # ==================== 检测标准 ====================
@@ -173,15 +163,16 @@ def check_image(filepath):
     if entropy < THRESHOLDS["image"]["min_entropy"]:
         issues.append(f"信息量过低(熵{entropy:.1f})")
 
-    # 6. 人脸检测（自动下载模型）
+    # 6. 人脸检测（SSD真人 + LBP动漫 双引擎）
     faces = detect_faces(img)
     scores["face_count"] = len(faces)
     if faces:
-        best = max(faces, key=lambda f: f[0])
-        conf, fx, fy, fw, fh = best
+        # 选最大的人脸检查宽高比
+        best = max(faces, key=lambda f: f[3] * f[4])  # 按面积选最大
+        source, fx, fy, fw, fh = best
         face_ratio = fw / max(fh, 1)
         scores["face_aspect"] = round(face_ratio, 2)
-        scores["face_conf"] = round(float(conf), 2)
+        scores["face_source"] = source
 
         min_ar = THRESHOLDS["image"]["min_face_aspect"]
         max_ar = THRESHOLDS["image"]["max_face_aspect"]
@@ -192,8 +183,7 @@ def check_image(filepath):
             issues.append(f"人脸过多({len(faces)}张)")
     else:
         scores["face_aspect"] = 0
-        scores["face_conf"] = 0
-        # 无人脸不算问题（风景/物体图合法），但记录
+        scores["face_source"] = "none"
         # 如果需要强制人脸检测，可设 min_face_count > 0
 
     # 7. 分辨率 + 宽高比 + 文件大小
