@@ -256,39 +256,22 @@ task(subagent_name="artist",
 
 **Step 1 — 运行自动化检测：**
 ```bash
-python3 tools/check_images.py --dir projects/{项目名}/images \
-  --output projects/{项目名}/图片质量检测报告.md \
-  --json projects/{项目名}/图片质量检测.json
+python3 tools/check_quality.py --type image --dir projects/{项目名}/images/ \
+  --output projects/{项目名}/图片质量检测.json
 ```
 
-**Step 2 — 读取质检JSON，判断是否通过：**
-```bash
-python3 -c "
-import json
-with open('projects/{项目名}/图片质量检测.json') as f:
-    d = json.load(f)
-s = d['summary']
-print(f'总问题: {s[\"total_issues\"]}')
-# 判断标准：
-# - total_issues <= 5: PASS
-# - 色调跳跃 > 0: 必须修复，统一色调关键词
-# - 风格漂移 > 3: 必须修复，加强画风锚定词  
-# - 亮度不均 > 3: 必须修复，调整lighting关键词
-pass_threshold = 5
-print(f'判定: {\"PASS\" if s[\"total_issues\"] <= pass_threshold else \"RETRY\"}')"
-```
+**Step 2 — 判断：**
+- `all_pass: true` → **PASS**，进入阶段6
+- `all_pass: false` → **RETRY**，下面每个失败镜头必须重新生成
 
-**Step 3 — 如果不通过（RETRY），提取问题镜头并批量修复：**
-
-对每个问题的修复策略（写入修复指令文件）：
-1. **色调跳跃**镜头 → Prompt 加 `dark blue-purple atmosphere, deep shadows, purple neon edge lighting`
-2. **风格漂移**镜头 → Prompt 加 `Chinese anime ink wash fusion style, consistent aesthetic`
-3. **亮度过亮**镜头 → Prompt 加 `cinematic low-key lighting, dark moody`
-4. **亮度过暗**镜头 → Prompt 加 `soft ambient glow, balanced exposure`
+**Step 3 — 常见问题修复策略：**
+1. **模糊（sharpness < 50）** → 换模型 `ep-20260708142843-bhdft`（备用端点画风可能不同）
+2. **分辨率低** → 确保 `--width 1080 --height 1920`
+3. **变形/崩坏** → Prompt 加 `high quality, sharp focus, well-proportioned face`
 
 **Step 4 — 重新生成问题镜头：**
 ```bash
-node tools/generate_image.js --prompt "修复后的Prompt" \
+node tools/generate_image.js --prompt "修复的英文Prompt" \
   --output projects/{项目名}/images/镜头{N}.png --width 1080 --height 1920
 ```
 

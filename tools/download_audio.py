@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 """
-音频工具 - AI BGM + 豆包 TTS 配音
+音频工具 - AI BGM + 豆包 TTS + ElevenLabs 音效
 
 用法:
   # 豆包 TTS 配音
-  export DOUBAO_TTS_KEY="xxx"
-  python3 tools/download_audio.py --type tts --text "夏日午后" --speaker zh_female_vv_uranus_bigtts --output audio/01.mp3
+  python3 tools/download_audio.py --type tts --text "夏日午后" --output audio/01.mp3
 
   # AI BGM（需 AIMUSIC_API_KEY + 积分）
-  python3 tools/download_audio.py --type bgm --keyword "summer piano gentle" --output audio/bgm.mp3
+  python3 tools/download_audio.py --type bgm --keyword "summer piano" --output audio/bgm.mp3
+
+  # ElevenLabs 音效（免费 1万积分/月）
+  python3 tools/download_audio.py --type sfx --keyword "watermelon bite crunch" --output audio/bite.mp3
 """
 
 import argparse
@@ -21,6 +23,7 @@ import urllib.request
 
 DOUBAO_KEY = os.environ.get("DOUBAO_TTS_KEY", "")
 AIMUSIC_KEY = os.environ.get("AIMUSIC_API_KEY", "")
+ELEVENLABS_KEY = os.environ.get("ELEVENLABS_API_KEY", "")
 
 
 def generate_tts(text, output_path, speaker="zh_female_vv_uranus_bigtts"):
@@ -125,23 +128,66 @@ def generate_bgm(keyword, output_path):
     return None
 
 
+def generate_sfx(keyword, output_path, duration=3):
+    """ElevenLabs Sound Effects API - 文字描述生成真实音效"""
+    if not ELEVENLABS_KEY:
+        print("[SFX] ❌ 未设置 ELEVENLABS_API_KEY")
+        print("  💡 https://elevenlabs.io/app/settings/api-keys")
+        return None
+
+    body = json.dumps({
+        "text": keyword,
+        "duration_seconds": min(duration, 22),
+    }).encode()
+
+    print(f"[SFX] 🔊 '{keyword[:50]}' ({duration}s)...")
+
+    try:
+        req = urllib.request.Request("https://api.elevenlabs.io/v1/sound-generation",
+            data=body, headers={
+                "xi-api-key": ELEVENLABS_KEY,
+                "Content-Type": "application/json",
+            }, method="POST")
+        data = urllib.request.urlopen(req, timeout=60).read()
+    except urllib.error.HTTPError as e:
+        err = e.read().decode(errors="replace")[:300]
+        print(f"[SFX] ❌ HTTP {e.code}: {err}")
+        return None
+
+    if not data or len(data) < 100:
+        print("[SFX] ❌ 空响应")
+        return None
+
+    os.makedirs(os.path.dirname(output_path) or ".", exist_ok=True)
+    with open(output_path, "wb") as f:
+        f.write(data)
+
+    print(f"[SFX] ✅ {os.path.basename(output_path)} ({len(data)/1024:.0f}KB)")
+    return output_path
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="音频工具 - TTS 配音 / AI BGM")
-    parser.add_argument("--type", choices=["tts", "bgm"], required=True)
+    parser.add_argument("--type", choices=["tts", "bgm", "sfx"], required=True)
     parser.add_argument("--text", help="合成文本（tts）")
     parser.add_argument("--speaker", default="zh_female_vv_uranus_bigtts", help="TTS 音色")
-    parser.add_argument("--keyword", help="BGM 描述（bgm）")
+    parser.add_argument("--keyword", help="BGM/SFX 描述")
+    parser.add_argument("--duration", type=int, default=3, help="SFX 时长（秒）")
     parser.add_argument("--output", required=True, help="输出文件路径")
 
     args = parser.parse_args()
 
     if args.type == "tts":
         if not args.text:
-            print("❌ TTS 需要 --text"); sys.exit(1)
+            print("❌ 需要 --text"); sys.exit(1)
         result = generate_tts(args.text, args.output, args.speaker)
     elif args.type == "bgm":
         if not args.keyword:
-            print("❌ BGM 需要 --keyword"); sys.exit(1)
+            print("❌ 需要 --keyword"); sys.exit(1)
         result = generate_bgm(args.keyword, args.output)
+    elif args.type == "sfx":
+        if not args.keyword:
+            print("❌ 需要 --keyword"); sys.exit(1)
+        result = generate_sfx(args.keyword, args.output, args.duration)
 
     sys.exit(0 if result else 1)
