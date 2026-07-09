@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-六维质量检测 — Director Gate 自动化质检
+七维质量检测 — Director Gate 自动化质检
 
-图片: 清晰度 | 曝光 | 色偏 | 主体居中 | 信息熵 | 宽高比
+图片: 清晰度 | 曝光 | 色偏 | 主体居中 | 信息熵 | 人脸 | 宽高比
 视频: 帧模糊率 | 帧间一致性 | 分辨率
 
 用法:
   python3 tools/check_quality.py --type image --dir projects/项目名/images/
   python3 tools/check_quality.py --type video --file shot.mp4
+
+人脸检测: OpenCV DNN（首次自动下载5MB模型）
 """
 
 import argparse
@@ -17,12 +19,73 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import urllib.request
 from pathlib import Path
 
 import cv2
 import numpy as np
 
 FFMPEG = os.environ.get("FFMPEG", "ffmpeg")
+MODEL_DIR = os.path.expanduser("~/.manju_models")
+
+# ==================== 人脸检测模型（首次自动下载） ====================
+FACE_MODEL_FILES = {
+    "prototxt": os.path.join(MODEL_DIR, "face_deploy.prototxt"),
+    "caffemodel": os.path.join(MODEL_DIR, "face_res10.caffemodel"),
+}
+FACE_MODEL_URLS = {
+    "prototxt": "https://cdn.jsdelivr.net/gh/opencv/opencv_extra@master/testdata/dnn/opencv_face_detector.prototxt",
+    "caffemodel": "https://cdn.jsdelivr.net/gh/opencv/opencv_3rdparty@dnn_samples_face_detector_20180205_fp16/res10_300x300_ssd_iter_140000_fp16.caffemodel",
+}
+
+_face_net = None
+
+def get_face_detector():
+    """获取人脸检测器（懒加载+自动下载模型）"""
+    global _face_net
+    if _face_net is not None:
+        return _face_net
+
+    os.makedirs(MODEL_DIR, exist_ok=True)
+
+    # 下载模型
+    for key, path in FACE_MODEL_FILES.items():
+        if not os.path.exists(path):
+            try:
+                urllib.request.urlretrieve(FACE_MODEL_URLS[key], path)
+            except Exception:
+                return None  # 下载失败，降级
+
+    if not all(os.path.exists(p) for p in FACE_MODEL_FILES.values()):
+        return None
+
+    _face_net = cv2.dnn.readNetFromCaffe(
+        FACE_MODEL_FILES["prototxt"],
+        FACE_MODEL_FILES["caffemodel"]
+    )
+    return _face_net
+
+
+def detect_faces(img):
+    """检测图片中的人脸，返回 [(confidence, x, y, w, h), ...]"""
+    net = get_face_detector()
+    if net is None:
+        return []
+
+    h, w = img.shape[:2]
+    blob = cv2.dnn.blobFromImage(img, 1.0, (300, 300), [104, 117, 123], False, False)
+    net.setInput(blob)
+    detections = net.forward()
+
+    faces = []
+    for i in range(detections.shape[2]):
+        confidence = detections[0, 0, i, 2]
+        if confidence > 0.5:
+            box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+            x, y, x2, y2 = box.astype(int)
+            faces.append((confidence, x, y, x2 - x, y2 - y))
+    return faces
+
 
 # ==================== 检测标准 ====================
 THRESHOLDS = {
@@ -31,8 +94,13 @@ THRESHOLDS = {
         "min_entropy": 3.5,         # 信息熵（太低=空白/纯色）
         "max_overexposed_pct": 0.3, # 过曝区域占比上限
         "max_underexposed_pct": 0.6,# 欠曝区域上限（暗调风格放宽）
-        "max_color_cast": 30.0,     # 风格化图片天然强色调，设为30
+        "max_color_cast": 30.0,     # 风格化图片天然强色调
         "min_center_attention": 0.3,# 中央区域边缘密度占比（竖屏主体居中）
+        "min_face_count": 0,        # 最少人脸数（0=不强制，但有人脸则检查）
+        "max_face_count": 3,        # 最多人脸数（超多可能AI崩坏）
+        "min_face_aspect": 0.5,     # 人脸宽高比下限（<0.5=太窄，AI拉伸变形）
+        "max_face_aspect": 1.5,     # 人脸宽高比上限（>1.5=太宽，AI挤压变形）
+        "min_face_confidence": 0.7, # 人脸置信度下限
         "min_resolution": (480, 640),
         "min_aspect_ratio": 0.45,
         "max_aspect_ratio": 0.75,
@@ -105,7 +173,30 @@ def check_image(filepath):
     if entropy < THRESHOLDS["image"]["min_entropy"]:
         issues.append(f"信息量过低(熵{entropy:.1f})")
 
-    # 6. 分辨率 + 宽高比 + 文件大小
+    # 6. 人脸检测（自动下载模型）
+    faces = detect_faces(img)
+    scores["face_count"] = len(faces)
+    if faces:
+        best = max(faces, key=lambda f: f[0])
+        conf, fx, fy, fw, fh = best
+        face_ratio = fw / max(fh, 1)
+        scores["face_aspect"] = round(face_ratio, 2)
+        scores["face_conf"] = round(float(conf), 2)
+
+        min_ar = THRESHOLDS["image"]["min_face_aspect"]
+        max_ar = THRESHOLDS["image"]["max_face_aspect"]
+        if face_ratio < min_ar or face_ratio > max_ar:
+            issues.append(f"人脸变形(宽高比{face_ratio:.1f}, 正常{min_ar}-{max_ar})")
+
+        if len(faces) > THRESHOLDS["image"]["max_face_count"]:
+            issues.append(f"人脸过多({len(faces)}张)")
+    else:
+        scores["face_aspect"] = 0
+        scores["face_conf"] = 0
+        # 无人脸不算问题（风景/物体图合法），但记录
+        # 如果需要强制人脸检测，可设 min_face_count > 0
+
+    # 7. 分辨率 + 宽高比 + 文件大小
     if h < THRESHOLDS["image"]["min_resolution"][0] or w < THRESHOLDS["image"]["min_resolution"][1]:
         issues.append(f"分辨率过低{w}×{h}")
     ratio = w / h if h > w else h / w
@@ -233,11 +324,12 @@ def format_report(results, passed, total, consistency=None):
         if scores:
             detail = f"| 清晰:{scores.get('sharpness','?')} "
             detail += f"过曝:{scores.get('overexposed_pct',0):.0%} "
-            if "center_attention" in scores:
-                detail += f"居中:{scores.get('center_attention',0):.1f} "
-            if "entropy" in scores:
-                detail += f"熵:{scores.get('entropy',0):.1f}"
-            detail += f" | {r['size_kb']}KB"
+            fc = scores.get('face_count', -1)
+            if fc >= 0:
+                detail += f"人脸:{fc}张 "
+            if "face_aspect" in scores and scores.get("face_aspect"):
+                detail += f"({scores.get('face_aspect',0):.1f}) "
+            detail += f"| {r['size_kb']}KB"
         lines.append(f"  {icon} {r['file']} {detail}")
         for issue in r.get("issues", []):
             lines.append(f"     ⚠️  {issue}")
