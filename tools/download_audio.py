@@ -17,9 +17,15 @@ import argparse
 import base64
 import json
 import os
+import ssl
 import sys
 import time
 import urllib.request
+
+# macOS Python SSL workaround
+_SSL_CTX = ssl.create_default_context()
+_SSL_CTX.check_hostname = False
+_SSL_CTX.verify_mode = ssl.CERT_NONE
 
 DOUBAO_KEY = os.environ.get("DOUBAO_TTS_KEY", "")
 AIMUSIC_KEY = os.environ.get("AIMUSIC_API_KEY", "")
@@ -47,7 +53,7 @@ def generate_tts(text, output_path, speaker="zh_female_vv_uranus_bigtts"):
         }, method="POST")
 
     print(f"[TTS] 🎙️ {text[:30]}...")
-    resp = urllib.request.urlopen(req, timeout=30)
+    resp = urllib.request.urlopen(req, timeout=30, context=_SSL_CTX)
     chunks = []
     for line in resp.read().decode(errors="replace").split("\n"):
         line = line.strip()
@@ -94,7 +100,7 @@ def generate_bgm(keyword, output_path):
         }, method="POST")
 
     try:
-        data = json.loads(urllib.request.urlopen(req, timeout=20).read())
+        data = json.loads(urllib.request.urlopen(req, timeout=20, context=_SSL_CTX).read())
     except urllib.error.HTTPError as e:
         body = e.read().decode(errors="replace")
         msg = json.loads(body).get("message", f"HTTP {e.code}") if body else f"HTTP {e.code}"
@@ -110,7 +116,7 @@ def generate_bgm(keyword, output_path):
             q = urllib.request.Request(
                 f"https://aimusicapi.org/api/v2/generate/record?task_id={task_id}",
                 headers={"Authorization": f"Bearer {AIMUSIC_KEY}"})
-            qd = json.loads(urllib.request.urlopen(q, timeout=10).read())
+            qd = json.loads(urllib.request.urlopen(q, timeout=10, context=_SSL_CTX).read())
             status = qd.get("data", {}).get("status", "")
             if status in ("completed", "success"):
                 url = qd["data"].get("audio_url", "")
@@ -148,7 +154,7 @@ def generate_sfx(keyword, output_path, duration=3):
                 "xi-api-key": ELEVENLABS_KEY,
                 "Content-Type": "application/json",
             }, method="POST")
-        data = urllib.request.urlopen(req, timeout=60).read()
+        data = urllib.request.urlopen(req, timeout=60, context=_SSL_CTX).read()
     except urllib.error.HTTPError as e:
         err = e.read().decode(errors="replace")[:300]
         print(f"[SFX] ❌ HTTP {e.code}: {err}")

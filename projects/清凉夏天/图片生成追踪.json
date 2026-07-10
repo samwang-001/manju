@@ -39,7 +39,15 @@
       "timestamp": "2026-07-09T07:44:28.324Z",
       "cost": 0.15,
       "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头03_new",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-09T08:49:39.200Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
     }
   ],
-  "summary": "共5张 | 成功5 | 后端:{\"seedream-direct\":5} | 💰$0.750"
+  "summary": "共6张 | 成功6 | 后端:{\"seedream-direct\":6} | 💰$0.900"
 }

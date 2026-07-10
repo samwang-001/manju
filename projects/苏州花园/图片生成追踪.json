@@ -1,0 +1,13 @@
+{
+  "generations": [
+    {
+      "shot": "镜头02",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-09T09:50:22.076Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    }
+  ],
+  "summary": "共1张 | 成功1 | 后端:{\"seedream-direct\":1} | 💰$0.150"
+}

@@ -77,6 +77,7 @@ def upload_image_to_url(image_path):
 
     def _multipart_post(url, field_name="files[]"):
         """构建multipart请求体并发送"""
+        import ssl
         boundary = uuid.uuid4().hex.encode()
         safe_name = f"shot{uuid.uuid4().hex[:6]}{ext}"
         body = b"--" + boundary + b"\r\n"
@@ -88,7 +89,10 @@ def upload_image_to_url(image_path):
         req = urllib.request.Request(url, data=body, headers={
             "Content-Type": f"multipart/form-data; boundary={boundary.decode()}",
         })
-        resp = urllib.request.urlopen(req, timeout=30)
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        resp = urllib.request.urlopen(req, timeout=30, context=ctx)
         return json.loads(resp.read())
 
     # uguu.se - 免费，无需key，返回直链
@@ -377,12 +381,16 @@ def generate_kling(image_path, output_path, prompt="", duration=5, fps=24):
     with open(image_path, "rb") as f:
         image_b64 = base64.b64encode(f.read()).decode()
 
+    image_url = upload_image_to_url(image_path)
+    if not image_url:
+        return None, "UPLOAD_FAILED"
+
     payload = json.dumps({
         "model": cfg["model"],
-        "image_url": upload_image_to_url(image_path) or f"data:image/png;base64,{image_b64}",
+        "image": image_url,
         "prompt": prompt or "cinematic camera movement, smooth motion",
         "duration": str(int(duration)),
-        "mode": "std",
+        "mode": cfg.get("mode", "std"),
     })
 
     headers = {
@@ -412,7 +420,7 @@ def generate_kling(image_path, output_path, prompt="", duration=5, fps=24):
     print(f"[Kling] 📋 任务ID: {task_id}")
 
     # 轮询
-    query_url = f"{cfg['base_url']}/videos/{task_id}"
+    query_url = f"{cfg['base_url']}/v1/videos/image2video/{task_id}"
     query_headers = {"Authorization": f"Bearer {cfg['api_key']}"}
     waited = 0
     while waited < cfg["poll_max_wait"]:

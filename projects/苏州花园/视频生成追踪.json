@@ -1,0 +1,68 @@
+{
+  "generations": [
+    {
+      "shot": "镜01",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T17:57:23.917245",
+      "cost": 0
+    },
+    {
+      "shot": "镜02",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T18:01:30.464536",
+      "cost": 0
+    },
+    {
+      "shot": "镜03",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T18:06:14.479879",
+      "cost": 0
+    },
+    {
+      "shot": "镜03_sd",
+      "backend": "kenburns(fallback)",
+      "status": "fallback",
+      "timestamp": "2026-07-09T18:08:57.843061",
+      "reason": "<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issue",
+      "cost": 0
+    },
+    {
+      "shot": "镜01_pro",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T18:13:23.661414",
+      "cost": 0
+    },
+    {
+      "shot": "镜02_pro",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T18:17:14.243038",
+      "cost": 0
+    },
+    {
+      "shot": "镜03_pro",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T18:21:30.290453",
+      "cost": 0
+    },
+    {
+      "shot": "镜03_opt",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T18:52:25.658354",
+      "cost": 0
+    },
+    {
+      "shot": "镜02_opt",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T19:08:32.131288",
+      "cost": 0
+    }
+  ]
+}

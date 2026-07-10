@@ -1,0 +1,35 @@
+{
+  "generations": [
+    {
+      "shot": "镜01_new",
+      "backend": "kenburns(fallback)",
+      "status": "fallback",
+      "timestamp": "2026-07-09T16:54:21.348567",
+      "reason": "HTTP_0",
+      "cost": 0
+    },
+    {
+      "shot": "镜01_new",
+      "backend": "kenburns(fallback)",
+      "status": "fallback",
+      "timestamp": "2026-07-09T16:55:16.602689",
+      "reason": "HTTP_400",
+      "cost": 0
+    },
+    {
+      "shot": "镜01_new",
+      "backend": "kenburns(fallback)",
+      "status": "fallback",
+      "timestamp": "2026-07-09T17:00:43.859336",
+      "reason": "TIMEOUT",
+      "cost": 0
+    },
+    {
+      "shot": "镜03_new",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-09T17:05:59.204592",
+      "cost": 0
+    }
+  ]
+}
