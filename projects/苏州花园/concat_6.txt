@@ -1,0 +1,6 @@
+file 'videos/镜01_clean.mp4'
+file 'videos/镜02_clean.mp4'
+file 'videos/镜03_clean.mp4'
+file 'videos/镜04.mp4'
+file 'videos/镜05.mp4'
+file 'videos/镜06.mp4'

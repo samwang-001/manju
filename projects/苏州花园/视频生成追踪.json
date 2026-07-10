@@ -63,6 +63,55 @@
       "status": "success",
       "timestamp": "2026-07-09T19:08:32.131288",
       "cost": 0
+    },
+    {
+      "shot": "镜03_nature",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T09:30:19.915041",
+      "cost": 0
+    },
+    {
+      "shot": "镜02_nature",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T09:34:15.535706",
+      "cost": 0
+    },
+    {
+      "shot": "镜03_clean",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T09:49:05.235911",
+      "cost": 0
+    },
+    {
+      "shot": "镜04",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T10:28:02.065372",
+      "cost": 0
+    },
+    {
+      "shot": "镜05",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T10:31:57.444025",
+      "cost": 0
+    },
+    {
+      "shot": "镜05",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T10:35:49.047805",
+      "cost": 0
+    },
+    {
+      "shot": "镜06",
+      "backend": "kling",
+      "status": "success",
+      "timestamp": "2026-07-10T10:42:05.574552",
+      "cost": 0
     }
   ]
 }

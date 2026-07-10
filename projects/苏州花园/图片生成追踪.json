@@ -7,7 +7,31 @@
       "timestamp": "2026-07-09T09:50:22.076Z",
       "cost": 0.15,
       "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头01_noanimal",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-10T01:44:05.474Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头03_noanimal",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-10T01:44:36.600Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
+    },
+    {
+      "shot": "镜头06",
+      "backend": "seedream-direct",
+      "status": "success",
+      "timestamp": "2026-07-10T02:23:18.943Z",
+      "cost": 0.15,
+      "resolution": "1080×1920(目标)"
     }
   ],
-  "summary": "共1张 | 成功1 | 后端:{\"seedream-direct\":1} | 💰$0.150"
+  "summary": "共4张 | 成功4 | 后端:{\"seedream-direct\":4} | 💰$0.600"
 }
